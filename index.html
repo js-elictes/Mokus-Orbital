@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mokus Orbital</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;900&family=Inter:wght@300;400;600;800&display=swap');
+
+    :root {
+        --bg-deep: #000000;
+        --glass-border: rgba(255, 255, 255, 0.15);
+        --text-main: #ffffff;
+        --text-muted: #888888;
+        --accent-main: #ffffff;
+        --accent-orange: #ff4d00;
+        --accent-green: #00ff66;
+        --accent-gold: #ffd700;
+        --accent-red: #ff3333;
+        --hud-bg: rgba(5, 5, 5, 0.65);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { 
+        height: 100%; width: 100%; background: var(--bg-deep); color: var(--text-main); 
+        font-family: 'Inter', sans-serif; overflow: hidden; 
+    }
+
+    /* Start Menu */
+    .start-menu {
+        position: absolute; inset: 0; background: #000; z-index: 999;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        transition: opacity 0.5s;
+    }
+    .start-menu.hidden { opacity: 0; pointer-events: none; }
+    .start-menu h1 { font-family: 'JetBrains Mono'; font-size: 3.5rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; text-align: center; }
+    .start-menu p { color: var(--text-muted); margin-bottom: 40px; font-family: 'JetBrains Mono'; text-align: center;}
+    .btn-init {
+        background: transparent; border: 2px solid #fff; color: #fff; padding: 15px 40px;
+        font-family: 'JetBrains Mono'; font-size: 1.2rem; font-weight: 900; cursor: pointer;
+        transition: all 0.2s; letter-spacing: 0.1em;
+    }
+    .btn-init:hover { background: #fff; color: #000; box-shadow: 0 0 30px rgba(255,255,255,0.5); }
+
+    .app-container { position: relative; width: 100vw; height: 100vh; }
+    
+    body.flamethrower-active { cursor: crosshair; }
+    .flame-overlay {
+        position: absolute; bottom: 0; left: 0; width: 100%; height: 30vh;
+        background: linear-gradient(to top, rgba(255, 77, 0, 0.3), transparent);
+        pointer-events: none; opacity: 0; z-index: 85; mix-blend-mode: screen; transition: opacity 0.5s;
+    }
+    body.flamethrower-active .flame-overlay { opacity: 1; animation: flamePulse 0.1s infinite alternate; }
+    @keyframes flamePulse { 0% { opacity: 0.7; filter: hue-rotate(0deg); } 100% { opacity: 1; filter: hue-rotate(-5deg); } }
+
+    .app-container::before {
+        content: ""; position: absolute; inset: 0; z-index: 90; pointer-events: none;
+        background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+        opacity: 0.3;
+    }
+
+    .flight-visualizer {
+        position: absolute; inset: 0; width: 100%; height: 100%; 
+        background: #020202; z-index: 1; overflow: hidden;
+    }
+
+    .stars {
+        position: absolute; inset: 0;
+        background-image: 
+            radial-gradient(1px 1px at 10% 10%, #fff 100%, transparent),
+            radial-gradient(1.5px 1.5px at 80% 20%, #848c9c 100%, transparent),
+            radial-gradient(2px 2px at 90% 90%, #ffffff 100%, transparent);
+        background-size: 250px 250px; animation: star-drift 200s linear infinite; opacity: 0.9;
+    }
+    @keyframes star-drift { 0% { transform: translateY(0); } 100% { transform: translateY(250px); } }
+
+    .planet-glow {
+        position: absolute; bottom: -40vh; left: 50%; transform: translateX(-50%);
+        width: 150vw; height: 80vh; border-radius: 50%; transition: background 2s ease, box-shadow 2s ease;
+        z-index: 2;
+    }
+    .env-earth .planet-glow {
+        background: radial-gradient(circle at 50% 0%, #0a1128 0%, #050505 50%, #000 80%);
+        box-shadow: inset 0 20px 80px rgba(100,150,255,0.1), 0 -20px 120px rgba(100, 150, 255, 0.05);
+    }
+    .env-moon .planet-glow {
+        background: radial-gradient(circle at 50% 0%, #b0b0b0 0%, #444 50%, #000 80%);
+        box-shadow: inset 0 20px 80px rgba(255,255,255,0.1), 0 -20px 100px rgba(255, 255, 255, 0.1);
+    }
+    .env-mars .planet-glow {
+        background: radial-gradient(circle at 50% 0%, #ff4d00 0%, #501400 50%, #000 80%);
+        box-shadow: inset 0 20px 80px rgba(255,77,0,0.2), 0 -20px 120px rgba(255, 77, 0, 0.1);
+    }
+
+    .master-svg { position: relative; z-index: 5; width: 100%; height: 100%; display: block; }
+    
+    .traj-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 2; stroke-dasharray: 4 12; }
+    .traj-active { fill: none; stroke: var(--accent-main); stroke-width: 4; stroke-linecap: butt; filter: drop-shadow(0 0 10px #fff); }
+    .env-mars .traj-active { stroke: var(--accent-orange); filter: drop-shadow(0 0 15px var(--accent-orange)); }
+
+    .starlink-sat { fill: #fff; filter: drop-shadow(0 0 4px #fff); opacity: 0.8; }
+
+    /* Flames */
+    .plume { fill: url(#plume-grad); opacity: 0; filter: brightness(1.2); transition: opacity 0.05s; transform-origin: top center; }
+    .active-burn .plume { opacity: 1; animation: plumeFlicker 0.05s infinite alternate; }
+    @keyframes plumeFlicker { 0% { opacity: 0.7; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.5); } }
+    
+    .plasma { fill: url(#plasma-grad); opacity: 0; filter: blur(5px); transition: opacity 0.5s; }
+    .reentry .plasma { opacity: 0.9; }
+    
+    .water-deluge { fill: #ddd; opacity: 0; filter: blur(15px); }
+    .smoke-cloud { fill: url(#smoke-grad); opacity: 0; filter: blur(15px); }
+    .launching .smoke-cloud { animation: smokeExpand 12s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+    .launching .water-deluge { animation: waterExpand 8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+
+    @keyframes smokeExpand { 0% { transform: scale(0.5); opacity: 0; } 10% { opacity: 1; } 100% { transform: scale(18) translateY(-100px) translateX(var(--drift)); opacity: 0; } }
+    @keyframes waterExpand { 0% { transform: scale(0.5); opacity: 0; } 10% { opacity: 0.6; } 100% { transform: scale(10) scaleY(4); opacity: 0; } }
+
+    /* Explosions */
+    .explosion-layer { opacity: 0; pointer-events: none; }
+    .exploded .explosion-layer { animation: explodeAnim 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
+    @keyframes explodeAnim {
+        0% { opacity: 1; transform: scale(0.1); filter: brightness(3); }
+        10% { opacity: 1; transform: scale(3); filter: brightness(1.5); }
+        100% { opacity: 0; transform: scale(6); filter: brightness(0.5); }
+    }
+
+    /* Big Main Launch Button */
+    .big-launch-wrapper {
+        position: absolute; bottom: 35%; left: 50%; transform: translateX(-50%); z-index: 50;
+        transition: opacity 0.3s, transform 0.3s; pointer-events: auto;
+    }
+    .big-launch-wrapper.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(20px); }
+    
+    .big-launch-btn {
+        background: rgba(0, 0, 0, 0.7); border: 2px solid var(--accent-main);
+        color: var(--accent-main); font-family: 'JetBrains Mono'; font-size: 2.5rem; font-weight: 900;
+        padding: 20px 80px; border-radius: 4px; cursor: pointer;
+        text-transform: uppercase; letter-spacing: 0.15em; backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px rgba(255,255,255,0.1), inset 0 0 20px rgba(255,255,255,0.05);
+        transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+    .big-launch-btn:hover { background: var(--accent-main); color: #000; box-shadow: 0 0 50px rgba(255,255,255,0.6); transform: scale(1.02);}
+
+    /* Top HUD Layout (One Line) */
+    .top-hud {
+        position: absolute; top: 0; left: 0; width: 100%; z-index: 20;
+        display: grid; grid-template-columns: 1fr auto 1fr; align-items: start;
+        padding: 20px 40px; pointer-events: none; gap: 20px;
+    }
+
+    .todo-panel {
+        pointer-events: auto; display: flex; flex-direction: column; gap: 10px; background: var(--hud-bg); 
+        border: 1px solid var(--glass-border); border-radius: 4px; padding: 15px; 
+        backdrop-filter: blur(12px); width: 320px; border-left: 4px solid var(--accent-main);
+    }
+    .todo-header { font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 900; letter-spacing: 0.1em; }
+    .todo-input { 
+        background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); 
+        color: #fff; font-family: 'Inter'; font-size: 0.9rem; padding: 5px 0; outline: none; width: 100%;
+    }
+    .todo-input::placeholder { color: #555; }
+    .todo-list { list-style: none; display: flex; flex-direction: column; gap: 5px; max-height: 120px; overflow-y: auto;}
+    .todo-list::-webkit-scrollbar { display: none; }
+    .todo-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #ddd; cursor: pointer; transition: 0.2s;}
+    .todo-item:hover { color: #fff; }
+    .todo-item.done { text-decoration: line-through; color: #555; }
+    .todo-item::before { content: '>'; color: var(--accent-main); font-family: 'JetBrains Mono'; font-weight: bold;}
+    .todo-item.done::before { content: 'X'; color: var(--accent-red); }
+
+    .realtime-clock-wrapper {
+        pointer-events: auto; display: flex; justify-content: center; align-items: center;
+    }
+    .realtime-clock {
+        font-family: 'JetBrains Mono'; font-size: 1.5rem; font-weight: 300; color: #fff;
+        background: var(--hud-bg); padding: 10px 25px; border-radius: 4px; border: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px); text-shadow: 0 0 10px rgba(255,255,255,0.5); cursor: pointer; transition: 0.2s;
+    }
+    .realtime-clock:hover { color: var(--accent-gold); border-color: var(--accent-gold); }
+
+    .top-right-group { display: flex; gap: 15px; align-items: flex-start; justify-content: flex-end; pointer-events: auto; }
+    
+    .destination-badge {
+        background: var(--hud-bg); border: 1px solid var(--glass-border); padding: 12px 20px;
+        border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; text-transform: uppercase; font-weight: 900;
+        backdrop-filter: blur(12px);
+    }
+
+    .wallet-badge {
+        background: rgba(255, 215, 0, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold);
+        padding: 10px 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 1.1rem; font-weight: 900;
+        display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; backdrop-filter: blur(12px);
+    }
+    .wallet-badge:hover { background: var(--accent-gold); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
+    .wallet-badge span:first-child { font-size: 1.3rem; } 
+
+    /* Lower HUD - Always visible but dimmed when inactive */
+    .lower-hud {
+        position: absolute; bottom: 15px; left: 0; width: 100%; height: 110px; z-index: 20;
+        display: flex; justify-content: space-between; padding: 0 30px; gap: 15px; pointer-events: none; 
+        transition: opacity 0.5s, filter 0.5s; opacity: 0.4; filter: grayscale(80%);
+    }
+    .lower-hud.active { opacity: 1; filter: grayscale(0%); pointer-events: auto; }
+    
+    .hud-panel {
+        background: var(--hud-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
+        border-top: 2px solid var(--accent-main); pointer-events: auto; display: flex; align-items: center;
+    }
+    .hud-left { clip-path: polygon(0 0, 93% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 30px 10px 20px; justify-content: space-around;}
+    .hud-center { clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%); flex: 1.5; padding: 10px; justify-content: center; gap: 40px;}
+    .hud-right { clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 20px 10px 30px; display: flex; flex-direction: column;}
+
+    .t-block { display: flex; flex-direction: column; gap: 2px; border-left: 2px solid var(--accent-main); padding-left: 8px;}
+    .t-label { font-family: 'JetBrains Mono'; font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; }
+    .t-value { font-family: 'JetBrains Mono'; font-size: 1.2rem; font-weight: 900; }
+    .t-unit { font-size: 0.7rem; color: var(--text-muted); margin-left: 3px; }
+
+    /* Engine Viz */
+    .engine-display-group { display: flex; gap: 20px; align-items: center; }
+    .engine-viz { width: 60px; height: 60px; display: block;}
+    .eng-nozzle { fill: #111; stroke: #333; stroke-width: 0.5; transition: all 0.1s; }
+    .eng-nozzle.hud-burning { fill: #ffb700; stroke: var(--accent-orange); filter: drop-shadow(0 0 3px var(--accent-orange)); }
+
+    .center-hud-main { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 300px;}
+    .hud-phase { font-family: 'JetBrains Mono'; font-size: 0.9rem; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 900; margin-bottom: -2px; color: var(--accent-main);}
+    .time { font-family: 'JetBrains Mono'; font-size: 3.5rem; white-space: nowrap; font-weight: 300; line-height: 1; letter-spacing: -0.05em; text-shadow: 0 0 15px rgba(255,255,255,0.2); transition: 0.2s;}
+    
+    .progress-bar-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-top: 8px; position: relative;}
+    .progress-bar { height: 100%; background: var(--accent-main); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px var(--accent-main); }
+
+    .btn-scrub {
+        width: 100%; background: rgba(255,0,0,0.1); border: 1px solid var(--accent-red); border-radius: 4px;
+        padding: 8px 0; color: var(--accent-red); font-family: 'JetBrains Mono'; font-size: 1rem;
+        text-transform: uppercase; font-weight: 900; cursor: pointer; transition: all 0.2s; margin-bottom: 5px;
+    }
+    .btn-scrub:hover { background: var(--accent-red); color: #fff; box-shadow: 0 0 15px rgba(255, 50, 50, 0.5); }
+
+    .com-log {
+        background: transparent; border: none; padding: 0; flex: 1; width: 100%;
+        overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-family: 'JetBrains Mono'; font-size: 0.65rem; color: #aaa; 
+        scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .com-log::-webkit-scrollbar { display: none; }
+    .log-entry { display: flex; gap: 8px; line-height: 1.3; }
+    .log-time { color: #fff; flex-shrink: 0; font-weight: bold; }
+    .log-quote { color: var(--accent-gold); font-style: italic; }
+    .log-loot { color: var(--accent-green); font-weight: bold; }
+
+    /* Modals */
+    .modal-overlay {
+        position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
+        display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-content {
+        width: 750px; max-height: 90vh; overflow-y: auto; background: #050505; border: 1px solid #333;
+        padding: 30px; border-radius: 4px; display: flex; flex-direction: column; gap: 15px; position: relative;
+    }
+    .modal-content::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #fff; }
+    
+    .modal-title { color: #fff; font-family: 'JetBrains Mono'; font-size: 1.2rem; text-transform: uppercase; font-weight: 900;}
+    
+    .lootbox-title { border-top-color: var(--accent-gold); box-shadow: 0 0 80px rgba(255, 215, 0, 0.1); text-align: center; width: 500px;}
+    .lootbox-title .modal-title { color: var(--accent-gold); }
+    .lootbox-quote { font-size: 1rem; font-style: italic; line-height: 1.5; margin: 15px 0; color: #fff; font-family: 'Inter'; }
+    .lootbox-rewards { font-family: 'JetBrains Mono'; font-size: 1.2rem; color: var(--accent-green); font-weight: 900; }
+
+    .test-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .test-form label { font-family: 'JetBrains Mono'; font-size: 0.6rem; color: #fff; text-transform: uppercase; font-weight: bold;}
+    .test-form input { background: #111; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 4px; font-family: 'JetBrains Mono'; width: 100%; font-size: 1rem;}
+    .test-form input:focus { border-color: var(--accent-main); outline: none; }
+
+    .store-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .store-item { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; background: #111; padding: 15px; border: 1px solid #333; transition: border-color 0.2s;}
+    .store-item:hover { border-color: var(--accent-gold); }
+    .store-item h3 { font-family: 'JetBrains Mono'; font-size: 0.9rem; color: #fff; }
+    .store-item p { font-family: 'Inter'; font-size: 0.75rem; color: #aaa; margin-bottom: 5px;}
+    .buy-btn { background: transparent; color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 6px 12px; font-family: 'JetBrains Mono'; cursor: pointer; transition: 0.2s; font-weight: 900; font-size: 0.75rem;}
+    .buy-btn:hover { background: var(--accent-gold); color: #000; box-shadow: 0 0 10px rgba(255,215,0,0.3);}
+    .close-btn { background: #333; color: #fff; border: none; padding: 12px; font-family: 'JetBrains Mono'; font-weight: 900; cursor: pointer; margin-top: 10px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem;}
+    .close-btn:hover { background: #555; }
+
+    .locked-item { display: none; }
+</style>
+</head>
+<body class="env-earth" id="bodyEnv">
+
+<div class="start-menu" id="startMenu">
+    <h1>MOKUS ORBITAL</h1>
+    <p>Acknowledge flight readiness to initialize telemetry systems.</p>
+    <button class="btn-init" id="btnInitLaunch">ACKNOWLEDGE</button>
+</div>
+
+<div class="app-container">
+    <div class="flame-overlay" id="flameOverlay"></div>
+    <div class="flight-visualizer" id="visualizerBg">
+        <div class="stars"></div>
+        <div class="planet-glow"></div>
+
+        <div class="big-launch-wrapper" id="bigLaunchWrapper">
+            <button class="big-launch-btn" id="bigLaunchBtn">INITIATE LAUNCH</button>
+        </div>
+
+        <svg class="master-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <linearGradient id="steel" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#222" />
+                    <stop offset="50%" stop-color="#ddd" />
+                    <stop offset="100%" stop-color="#111" />
+                </linearGradient>
+                <linearGradient id="plume-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ffffff" />
+                    <stop offset="20%" stop-color="#ffb700" />
+                    <stop offset="60%" stop-color="#ff4d00" />
+                    <stop offset="100%" stop-color="transparent" />
+                </linearGradient>
+                <radialGradient id="smoke-grad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#fff" stop-opacity="0.9" />
+                    <stop offset="100%" stop-color="#111" stop-opacity="0" />
+                </radialGradient>
+                <linearGradient id="plasma-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="transparent" />
+                    <stop offset="100%" stop-color="#ff3300" />
+                </linearGradient>
+                <pattern id="truss" width="12" height="12" patternUnits="userSpaceOnUse">
+                    <rect width="12" height="12" fill="#0a0a0a"/>
+                    <path d="M0,0 L12,12 M12,0 L0,12" stroke="#222" stroke-width="1.5"/>
+                    <rect width="12" height="12" fill="none" stroke="#333" stroke-width="1"/>
+                </pattern>
+            </defs>
+
+            <path class="traj-bg" id="trajBg" d="M 300 720 C 300 200, 700 100, 1400 100" />
+            <path id="returnPath" d="M 1400 100 C 1800 -150, 800 -250, 300 720" fill="none" stroke="none" />
+
+            <g id="orbitalLayer">
+                <g id="stationUnlock" class="locked-item">
+                    <rect x="-40" y="-2" width="80" height="4" fill="#aaa" /> 
+                    <rect x="-35" y="-15" width="25" height="30" fill="#2255ff" stroke="#fff" stroke-width="0.5"/> 
+                    <rect x="10" y="-15" width="25" height="30" fill="#2255ff" stroke="#fff" stroke-width="0.5"/> 
+                    <circle cx="0" cy="0" r="8" fill="#ddd" /> 
+                    <rect x="-5" y="8" width="10" height="15" fill="#888" /> 
+                </g>
+                <g id="teslaUnlock" class="locked-item">
+                    <path d="M-15,5 L-10,-2 L5,-2 L15,5 Z" fill="#dd0000" /> 
+                    <circle cx="-8" cy="5" r="3" fill="#111" stroke="#555" stroke-width="1"/> 
+                    <circle cx="8" cy="5" r="3" fill="#111" stroke="#555" stroke-width="1"/> 
+                    <polygon points="-5,-2 2,-2 0,-5" fill="#fff" opacity="0.5" /> 
+                </g>
+                <g id="crewUnlock" class="locked-item" transform="translate(10, 0)">
+                    <g transform="translate(0,0) rotate(15) scale(0.6)">
+                        <path d="M 0,0 Q -10,10 -20,5" stroke="#555" stroke-width="0.5" fill="none"/>
+                        <path d="M -3,2 L 3,2 L 4,8 L 1,8 L 1,5 L -1,5 L -1,8 L -4,8 Z" fill="#eee"/>
+                        <path d="M -3,2 L -6,6 M 3,2 L 6,4" stroke="#eee" stroke-width="1.5" stroke-linecap="round"/>
+                        <circle cx="0" cy="-1" r="2.5" fill="#fff"/>
+                        <path d="M -1.5,-1.5 Q 0,-3 1.5,-1.5 Q 1.5,0 0,0.5 Q -1.5,0 -1.5,-1.5 Z" fill="#111"/>
+                        <rect x="-2" y="0" width="4" height="4" fill="#ccc"/>
+                    </g>
+                    <g transform="translate(15, -5) rotate(-20) scale(0.5)">
+                        <path d="M 0,0 Q -15,-5 -25,10" stroke="#555" stroke-width="0.5" fill="none"/>
+                        <path d="M -3,2 L 3,2 L 4,8 L 1,8 L 1,5 L -1,5 L -1,8 L -4,8 Z" fill="#eee"/>
+                        <path d="M -3,2 L -5,0 M 3,2 L 5,5" stroke="#eee" stroke-width="1.5" stroke-linecap="round"/>
+                        <circle cx="0" cy="-1" r="2.5" fill="#fff"/>
+                        <path d="M -1.5,-1.5 Q 0,-3 1.5,-1.5 Q 1.5,0 0,0.5 Q -1.5,0 -1.5,-1.5 Z" fill="#111"/>
+                        <rect x="-2" y="0" width="4" height="4" fill="#ccc"/>
+                    </g>
+                </g>
+            </g>
+
+            <path class="traj-active" id="trajActive" d="M 300 720 C 300 200, 700 100, 1400 100" stroke-dasharray="0 9999" />
+            <circle cx="1400" cy="100" r="6" fill="#fff"/>
+
+            <g class="pad-effects" transform="translate(300, 720)">
+                <ellipse class="water-deluge" cx="0" cy="5" rx="120" ry="20" />
+                <circle class="smoke-cloud" cx="-70" cy="0" r="40" style="--drift: -120px;" />
+                <circle class="smoke-cloud" cx="70" cy="0" r="40" style="--drift: 120px;" />
+                <circle class="smoke-cloud" cx="0" cy="-30" r="60" style="--drift: 0px;" />
+            </g>
+
+            <g id="mechazilla" transform="translate(240, 900) scale(0.7)" style="cursor: pointer; pointer-events: all;" title="Access SysAdmin">
+                <rect x="-30" y="0" width="140" height="20" fill="#111"/> 
+                <rect x="0" y="-700" width="30" height="700" fill="url(#truss)"/> 
+                <rect x="0" y="-700" width="30" height="700" fill="none" stroke="#444" stroke-width="2"/>
+                <g transform="translate(30, -420)">
+                    <rect x="0" y="-6" width="70" height="12" fill="#333" rx="2" stroke="#555"/>
+                </g>
+            </g>
+
+            <g id="booster">
+                <g transform="translate(0, -120)">
+                    <rect x="-12" y="0" width="24" height="120" fill="url(#steel)" />
+                    <polygon points="-14,120 14,120 12,125 -12,125" fill="#050505" />
+                    <path class="plume" d="M -9 125 L 9 125 L 3 200 L -3 200 Z" />
+                    <g class="explosion-layer" transform="translate(0, 60)">
+                        <circle cx="0" cy="0" r="40" fill="#fff"/>
+                        <circle cx="0" cy="0" r="80" fill="#ff4d00" opacity="0.9"/>
+                    </g>
+                </g>
+            </g>
+
+            <g id="starship">
+                <g transform="translate(0, -80)">
+                    <rect class="plasma" x="-8" y="10" width="16" height="60" />
+                    <path d="M0,0 C10,10 12,30 12,80 L0,80 Z" fill="#111" />
+                    <path d="M0,0 C-10,10 -12,30 -12,80 L0,80 Z" fill="url(#steel)" />
+                    <polygon points="-10,60 -16,75 -14,80 -10,75" fill="url(#steel)" />
+                    <polygon points="10,60 16,75 14,80 10,75" fill="#111" />
+                    <rect x="-7" y="80" width="14" height="3" fill="#222" />
+                    
+                    <path class="plume" d="M -5 83 L 5 83 L 2 130 L -2 130 Z" />
+                    <g class="explosion-layer" transform="translate(0, 40)">
+                        <circle cx="0" cy="0" r="30" fill="#fff"/>
+                        <circle cx="0" cy="0" r="60" fill="#ff4d00" opacity="0.9"/>
+                    </g>
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <header class="top-hud">
+        <div class="todo-panel">
+            <span class="todo-header">Pre-Flight Manifest</span>
+            <input type="text" class="todo-input" id="todoInput" placeholder="Add directive and hit Enter..." autocomplete="off">
+            <ul class="todo-list" id="todoList"></ul>
+        </div>
+
+        <div class="realtime-clock-wrapper">
+            <div class="realtime-clock" id="realtimeClock" title="Configure Flight Duration">00:00:00</div>
+        </div>
+
+        <div class="top-right-group">
+            <div class="destination-badge" id="destBadge">LEO INSERTION</div>
+            <div class="wallet-badge" id="btnStore" title="Access Terminal">
+                <span>Ð</span> <span id="dogeCount">0</span>
+            </div>
+        </div>
+    </header>
+
+    <footer class="lower-hud" id="lowerHud">
+        <div class="hud-panel hud-left">
+            <div class="t-block">
+                <span class="t-label">Altitude</span>
+                <div><span class="t-value" id="altDisplay">0</span><span class="t-unit">KM</span></div>
+            </div>
+            <div class="t-block">
+                <span class="t-label">Velocity</span>
+                <div><span class="t-value" id="velDisplay">0</span><span class="t-unit">KM/H</span></div>
+            </div>
+            <div class="t-block">
+                <span class="t-label">Pitch</span>
+                <div><span class="t-value" id="pitchDisplay">90.0</span><span class="t-unit">°</span></div>
+            </div>
+            <div class="t-block" style="border:none;">
+                <span class="t-label">Flight #</span>
+                <div><span class="t-value" id="missionCount">0</span></div>
+            </div>
+        </div>
+
+        <div class="hud-panel hud-center">
+            <div class="engine-display-group">
+                <div style="text-align: center;">
+                    <span class="config-label" style="display:block; margin-bottom:2px;">BOOSTER</span>
+                    <svg viewBox="0 0 100 100" class="engine-viz" id="svgBooster"></svg>
+                </div>
+                <div style="text-align: center;">
+                    <span class="config-label" style="display:block; margin-bottom:2px;">SHIP</span>
+                    <svg viewBox="0 0 100 100" class="engine-viz" id="svgShip"></svg>
+                </div>
+            </div>
+            
+            <div class="center-hud-main">
+                <div class="hud-phase" id="phaseDisplay">T-MINUS HOLDING</div>
+                <div class="time" id="timeDisplay">25:00</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hud-panel hud-right">
+            <button class="btn-scrub" id="btnReset">SCRUB / FTS</button>
+            <div class="com-log" id="missionLog">
+                <div class="log-entry"><span class="log-time">SYS</span><span>Awaiting launch director.</span></div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="storeModal">
+        <div class="modal-content">
+            <div class="modal-title">Giga-Store Upgrades</div>
+            <div class="store-grid">
+                <div class="store-item">
+                    <div>
+                        <h3>Tier I: Meme Data (10 Ð)</h3>
+                        <p>Standard orbital wisdom extraction.</p>
+                    </div>
+                    <button class="buy-btn" onclick="buyLootbox(10)">DECODE</button>
+                </div>
+                <div class="store-item">
+                    <div>
+                        <h3>Tier II: FSD Beta (50 Ð)</h3>
+                        <p>Rare telemetry & moderate Doge multiplier.</p>
+                    </div>
+                    <button class="buy-btn" onclick="buyLootbox(50)">DECODE</button>
+                </div>
+                <div class="store-item" id="block-tesla">
+                    <div>
+                        <h3>Red Roadster (500 Ð)</h3>
+                        <p>Deploy a car into permanent orbit.</p>
+                    </div>
+                    <button class="buy-btn" id="btn-tesla" onclick="buyItem('tesla')">PURCHASE</button>
+                </div>
+                <div class="store-item" id="block-crew">
+                    <div>
+                        <h3>Crew Dragon Rating (1,000 Ð)</h3>
+                        <p>Deploy orbital astronauts.</p>
+                    </div>
+                    <button class="buy-btn" id="btn-crew" onclick="buyItem('crew')">PURCHASE</button>
+                </div>
+                <div class="store-item" id="block-moon">
+                    <div>
+                        <h3>Lunar Gateway (1,000 Ð)</h3>
+                        <p>Shift operations to Moon. Base Doge x5.</p>
+                    </div>
+                    <button class="buy-btn" id="btn-moon" onclick="buyItem('moon')">PURCHASE</button>
+                </div>
+                <div class="store-item" id="block-station">
+                    <div>
+                        <h3>Orbital Station (2,000 Ð)</h3>
+                        <p>Deploy large structure to orbit.</p>
+                    </div>
+                    <button class="buy-btn" id="btn-station" onclick="buyItem('station')">PURCHASE</button>
+                </div>
+                <div class="store-item" id="block-mars">
+                    <div>
+                        <h3>Mars Base Alpha (5,000 Ð)</h3>
+                        <p>Shift operations to Mars. Base Doge x10.</p>
+                    </div>
+                    <button class="buy-btn" id="btn-mars" onclick="buyItem('mars')">PURCHASE</button>
+                </div>
+                <div class="store-item" id="block-flame">
+                    <div>
+                        <h3 style="color: var(--accent-orange);">Boring Flamethrower (5,000 Ð)</h3>
+                        <p>Activates persistent UI fire overlay.</p>
+                    </div>
+                    <button class="buy-btn" id="btn-flame" onclick="buyItem('flame')" style="color: var(--accent-orange); border-color: var(--accent-orange);">ACQUIRE</button>
+                </div>
+            </div>
+            <button class="close-btn" id="btnCloseStore">CLOSE TERMINAL</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="timerModal">
+        <div class="modal-content" style="width: 400px;">
+            <div class="modal-title">Flight Profile Duration</div>
+            <div class="test-form">
+                <div>
+                    <label>Burn Duration (Minutes)</label>
+                    <input type="number" id="workInput" value="25" min="1" max="120">
+                </div>
+                <div>
+                    <label>Coast Duration (Minutes)</label>
+                    <input type="number" id="restInput" value="5" min="1" max="60">
+                </div>
+            </div>
+            <button class="close-btn" id="btnApplyTimer" style="width: 100%;">LOCK IN PARAMETERS</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="quoteModal">
+        <div class="modal-content lootbox-title">
+            <div class="modal-title">𝕏 Transmission Decoded</div>
+            <div class="lootbox-quote" id="quoteText">"..."</div>
+            <div class="lootbox-rewards" id="lootRewards"></div>
+            <button class="close-btn" id="btnCloseQuote">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="testModal">
+        <div class="modal-content" style="width: 450px;">
+            <div class="modal-title">SysAdmin Override</div>
+            <div class="test-form">
+                <div>
+                    <label>Sim Speed (x)</label>
+                    <input type="number" id="testSpeed" value="1" step="0.1">
+                </div>
+                <div>
+                    <label>Completed Missions</label>
+                    <input type="number" id="testMissions" value="0">
+                </div>
+                <div>
+                    <label>DOGE Balance</label>
+                    <input type="number" id="testCurrency" value="0">
+                </div>
+            </div>
+            <button class="close-btn" id="btnApplyTest" style="width: 100%;">FORCE OVERRIDE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STAGING_MECO = 0.25;
+    const STAGING_SEP = 0.26;
+    const LANDING_DONE = 0.50; 
+    const PAD_Y = 720;
+    const PAD_X = 300;
+    
+    let sessionState = 'IDLE'; // IDLE, PRELAUNCH, WORK, REST
+    let exactProgress = 0;
+    let isRunning = false;
+    let countdownTimer = null;
+    let lastFrameTime = 0;
+    let speedMult = 1;
+    let totalPathLength = 0;
+    let returnPathLength = 0;
+    
+    let completedMissions = 0;
+    let dogeCurrency = 0;
+    let activePlanet = 'earth';
+    let eventsLogged = { meco: false, sep: false, land: false, exp: false };
+    
+    let upgrades = { 
+        crew: { owned: false, active: false, cost: 1000 }, 
+        station: { owned: false, active: false, cost: 2000 }, 
+        flame: { owned: false, active: false, cost: 5000 }, 
+        moon: { owned: false, active: false, cost: 1000 }, 
+        mars: { owned: false, active: false, cost: 5000 }, 
+        tesla: { owned: false, active: false, cost: 500 } 
+    };
+
+    const orbitalItems = [
+        { id: 'stationUnlock', speed: 0.00002, offset: 0 },
+        { id: 'teslaUnlock', speed: 0.00003, offset: 0.3 },
+        { id: 'crewUnlock', speed: 0.000025, offset: 0.6 }
+    ];
+    let starlinkData = [];
+    let audioCtx = null;
+
+    const elonQuotes = [
+        "When something is important enough, you do it even if the odds are not in your favor.",
+        "Persistence is very important. You should not give up unless you are forced to give up.",
+        "If things are not failing, you are not innovating enough.",
+        "I think it is possible for ordinary people to choose to be extraordinary.",
+        "Rockets are cool. There's no getting around that.",
+        "Who controls the memes, controls the Universe."
+    ];
+
+    const DOM = {
+        startMenu: document.getElementById('startMenu'),
+        btnInit: document.getElementById('btnInitLaunch'),
+        bigLaunchWrapper: document.getElementById('bigLaunchWrapper'),
+        bigLaunchBtn: document.getElementById('bigLaunchBtn'),
+        lowerHud: document.getElementById('lowerHud'),
+        time: document.getElementById('timeDisplay'),
+        phase: document.getElementById('phaseDisplay'),
+        pitch: document.getElementById('pitchDisplay'),
+        alt: document.getElementById('altDisplay'),
+        vel: document.getElementById('velDisplay'),
+        progress: document.getElementById('progressBar'),
+        trajBg: document.getElementById('trajBg'),
+        trajActive: document.getElementById('trajActive'),
+        returnPath: document.getElementById('returnPath'),
+        ship: document.getElementById('starship'),
+        booster: document.getElementById('booster'),
+        reset: document.getElementById('btnReset'),
+        log: document.getElementById('missionLog'),
+        workIn: document.getElementById('workInput'),
+        restIn: document.getElementById('restInput'),
+        todoInput: document.getElementById('todoInput'),
+        todoList: document.getElementById('todoList'),
+        missionCount: document.getElementById('missionCount'),
+        dogeCount: document.getElementById('dogeCount'),
+        btnStore: document.getElementById('btnStore'),
+        storeModal: document.getElementById('storeModal'),
+        quoteModal: document.getElementById('quoteModal'),
+        quoteText: document.getElementById('quoteText'),
+        lootRewards: document.getElementById('lootRewards'),
+        btnCloseStore: document.getElementById('btnCloseStore'),
+        btnCloseQuote: document.getElementById('btnCloseQuote'),
+        visualizerBg: document.getElementById('visualizerBg'),
+        bodyEnv: document.getElementById('bodyEnv'),
+        destBadge: document.getElementById('destBadge'),
+        orbitalLayer: document.getElementById('orbitalLayer'),
+        svgShip: document.getElementById('svgShip'),
+        svgBooster: document.getElementById('svgBooster'),
+        testModal: document.getElementById('testModal'),
+        btnApplyTest: document.getElementById('btnApplyTest'),
+        tSpeed: document.getElementById('testSpeed'),
+        tMissions: document.getElementById('testMissions'),
+        tCurrency: document.getElementById('testCurrency'),
+        mechazilla: document.getElementById('mechazilla'),
+        realtimeClock: document.getElementById('realtimeClock'),
+        timerModal: document.getElementById('timerModal'),
+        btnApplyTimer: document.getElementById('btnApplyTimer')
+    };
+
+    // Live Clock
+    setInterval(() => {
+        DOM.realtimeClock.textContent = new Date().toLocaleTimeString('en-US', {hour12: false});
+    }, 1000);
+
+    // To-Do Logic
+    DOM.todoInput.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' && DOM.todoInput.value.trim() !== '') {
+            const li = document.createElement('li');
+            li.className = 'todo-item';
+            li.textContent = DOM.todoInput.value.trim();
+            li.addEventListener('click', () => li.classList.toggle('done'));
+            DOM.todoList.appendChild(li);
+            DOM.todoInput.value = '';
+        }
+    });
+
+    DOM.btnInit.addEventListener('click', () => {
+        DOM.startMenu.classList.add('hidden');
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        init();
+    });
+
+    DOM.realtimeClock.addEventListener('click', () => {
+        if(sessionState === 'IDLE') DOM.timerModal.classList.add('active');
+    });
+    DOM.btnApplyTimer.addEventListener('click', () => {
+        updateTimeDisplay(getWorkTime());
+        DOM.timerModal.classList.remove('active');
+    });
+
+    function generateEngineSVGs() {
+        let bHtml = '';
+        [20, 10, 3].forEach((count, ringIdx) => {
+            const radii = [40, 24, 8];
+            const cls = ringIdx === 0 ? 'b-outer' : (ringIdx === 1 ? 'b-mid' : 'b-inner');
+            for(let i=0; i<count; i++) {
+                const angle = (i/count) * Math.PI * 2;
+                bHtml += `<circle cx="${50 + Math.cos(angle)*radii[ringIdx]}" cy="${50 + Math.sin(angle)*radii[ringIdx]}" r="3.5" class="eng-nozzle ${cls}"/>`;
+            }
+        });
+        DOM.svgBooster.innerHTML = bHtml;
+
+        let sHtml = '';
+        [3, 3].forEach((count, ringIdx) => {
+            const radii = [30, 10];
+            const cls = ringIdx === 0 ? 's-vac' : 's-sl';
+            for(let i=0; i<count; i++) {
+                const angle = (i/count) * Math.PI * 2 + (ringIdx===0?Math.PI/3:0);
+                sHtml += `<circle cx="${50 + Math.cos(angle)*radii[ringIdx]}" cy="${50 + Math.sin(angle)*radii[ringIdx]}" r="6" class="eng-nozzle ${cls}"/>`;
+            }
+        });
+        DOM.svgShip.innerHTML = sHtml;
+    }
+
+    function initOrbitalData() {
+        starlinkData = [];
+        const satsToDraw = Math.min(completedMissions * 5, 200); 
+        for(let i=0; i<satsToDraw; i++) {
+            starlinkData.push({
+                speed: 0.00004 + (Math.random() * 0.00002),
+                offset: Math.random(),
+                radiusOff: (i % 5) * 15,
+                yAmp: 300 + Math.random() * 100
+            });
+        }
+    }
+
+    function init() {
+        totalPathLength = DOM.trajBg.getTotalLength();
+        returnPathLength = DOM.returnPath.getTotalLength();
+        DOM.trajActive.style.strokeDasharray = `0 9999`;
+        generateEngineSVGs();
+        initOrbitalData();
+        updateTimeDisplay(getWorkTime());
+        syncMetaUI();
+        updateVisuals(0);
+        requestAnimationFrame(renderLoop);
+    }
+
+    function getWorkTime() { return Math.max(1, parseInt(DOM.workIn.value) || 25) * 60; }
+    function getRestTime() { return Math.max(1, parseInt(DOM.restIn.value) || 5) * 60; }
+    function formatTime(sec) {
+        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+        const s = Math.floor(sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function playTone(freq, type, duration) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.value = freq;
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playSound(type) {
+        if(!audioCtx) return;
+        const now = audioCtx.currentTime;
+        if(type === 'launch' || type === 'exp') {
+            const bufferSize = audioCtx.sampleRate * (type === 'exp' ? 3 : 5);
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass';
+            filter.frequency.value = type === 'exp' ? 2000 : 100;
+            if(type === 'exp') filter.frequency.exponentialRampToValueAtTime(100, now + 2);
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(type === 'exp' ? 2.0 : 0, now);
+            if(type === 'launch') {
+                gain.gain.linearRampToValueAtTime(1.5, now + 1.0); gain.gain.setValueAtTime(1.5, now + 4); gain.gain.linearRampToValueAtTime(0, now + 5);
+            } else { gain.gain.exponentialRampToValueAtTime(0.01, now + 2.5); }
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            noise.start(now);
+        } else if (type === 'orbit' || type === 'loot') {
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = type === 'loot' && i%2===0 ? 'sawtooth' : 'sine'; osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0, now + i*0.1); gain.gain.linearRampToValueAtTime(0.1, now + i*0.1 + 0.1); gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.1 + 2);
+                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now + i * 0.1); osc.stop(now + i*0.1 + 2.5);
+            });
+        }
+    }
+
+    function logEvent(msg, type = 'normal') {
+        const el = document.createElement('div');
+        el.className = 'log-entry';
+        let tStr = "SYS";
+        if(sessionState === 'WORK') tStr = `T+${formatTime(getWorkTime() - Math.ceil(getWorkTime() * (1 - exactProgress)))}`;
+        else if (sessionState === 'REST') tStr = `C-${formatTime(Math.ceil(getRestTime() * (1 - exactProgress)))}`;
+        else if (sessionState === 'PRELAUNCH') tStr = `T-`;
+        
+        let content = `<span class="log-time">${tStr}</span>`;
+        if (type === 'quote') content += `<span class="log-quote">${msg}</span>`;
+        else if (type === 'loot') content += `<span class="log-loot">${msg}</span>`;
+        else content += `<span style="color: ${type==='success'?'var(--accent-green)':(type==='error'?'var(--accent-red)':'inherit')}">${msg}</span>`;
+        
+        el.innerHTML = content;
+        DOM.log.appendChild(el);
+        DOM.log.scrollTop = DOM.log.scrollHeight;
+    }
+
+    function updateTimeDisplay(seconds) { 
+        if(sessionState !== 'PRELAUNCH') DOM.time.textContent = formatTime(seconds); 
+    }
+
+    function syncMetaUI() {
+        DOM.missionCount.textContent = completedMissions;
+        DOM.dogeCount.textContent = dogeCurrency;
+        
+        DOM.bodyEnv.className = '';
+        if (activePlanet === 'mars') { DOM.bodyEnv.classList.add('env-mars'); DOM.destBadge.textContent = "MARS BASE ALPHA"; } 
+        else if (activePlanet === 'moon') { DOM.bodyEnv.classList.add('env-moon'); DOM.destBadge.textContent = "LUNAR GATEWAY"; } 
+        else { DOM.bodyEnv.classList.add('env-earth'); DOM.destBadge.textContent = "LEO INSERTION"; }
+
+        document.body.classList.toggle('flamethrower-active', upgrades.flame.active);
+        initOrbitalData(); 
+    }
+
+    function renderOrbits(now) {
+        let html = '';
+        starlinkData.forEach((s, i) => {
+            let p = ((now * s.speed) + s.offset) % 1;
+            let x = -200 + (2000 * p);
+            let y = s.yAmp - (Math.sin(p * Math.PI) * (s.yAmp - s.radiusOff));
+            html += `<circle cx="${x}" cy="${y}" r="2" class="starlink-sat"/>`;
+        });
+        
+        const oldSats = document.querySelectorAll('.starlink-sat');
+        oldSats.forEach(el => el.remove());
+        DOM.orbitalLayer.insertAdjacentHTML('beforeend', html);
+
+        orbitalItems.forEach(o => {
+            const el = document.getElementById(o.id);
+            const upgradeKey = o.id.replace('Unlock', '');
+            if(upgrades[upgradeKey]?.active) {
+                el.style.display = 'block';
+                let p = ((now * o.speed) + o.offset) % 1;
+                let x = -200 + (2000 * p);
+                let y = 300 - (Math.sin(p * Math.PI) * 200);
+                let dx = 2000; 
+                let dy = -200 * Math.PI * Math.cos(p * Math.PI);
+                let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+                el.setAttribute('transform', `translate(${x}, ${y}) rotate(${angle})`);
+            } else {
+                el.style.display = 'none';
+            }
+        });
+    }
+
+    function updateVisuals(progress) {
+        if (eventsLogged.exp) return; 
+
+        if (sessionState === 'IDLE' || sessionState === 'WORK' || sessionState === 'PRELAUNCH') {
+            const pLen = progress * totalPathLength;
+            let shipLen = pLen + 120;
+            if (shipLen > totalPathLength) shipLen = totalPathLength;
+
+            DOM.progress.style.width = `${progress * 100}%`;
+
+            const ptBooster = DOM.trajBg.getPointAtLength(pLen);
+            const ptBoosterNext = DOM.trajBg.getPointAtLength(Math.min(pLen + 1, totalPathLength));
+            let angleBooster = Math.atan2(ptBoosterNext.y - ptBooster.y, ptBoosterNext.x - ptBooster.x) * (180 / Math.PI) + 90;
+
+            if (progress < STAGING_SEP) {
+                DOM.booster.setAttribute('transform', `translate(${ptBooster.x}, ${ptBooster.y}) rotate(${angleBooster})`);
+                DOM.ship.setAttribute('transform', `translate(${ptBooster.x}, ${ptBooster.y}) rotate(${angleBooster}) translate(0, -120)`);
+                DOM.trajActive.style.strokeDasharray = `${pLen} 9999`;
+            } else {
+                const ptShip = DOM.trajBg.getPointAtLength(shipLen);
+                const ptShipNext = DOM.trajBg.getPointAtLength(Math.min(shipLen + 1, totalPathLength));
+                let angleShip = Math.atan2(ptShipNext.y - ptShip.y, ptShipNext.x - ptShip.x) * (180 / Math.PI) + 90;
+                
+                DOM.ship.setAttribute('transform', `translate(${ptShip.x}, ${ptShip.y}) rotate(${angleShip})`);
+                DOM.trajActive.style.strokeDasharray = `${shipLen} 9999`;
+                
+                const sepPt = DOM.trajBg.getPointAtLength(STAGING_SEP * totalPathLength);
+                const sepPtNext = DOM.trajBg.getPointAtLength(STAGING_SEP * totalPathLength + 1);
+                const sepAngle = Math.atan2(sepPtNext.y - sepPt.y, sepPtNext.x - sepPt.x) * (180 / Math.PI) + 90;
+                
+                let bProgress = Math.min(1, (progress - STAGING_SEP) / (LANDING_DONE - STAGING_SEP));
+                let currX = sepPt.x + Math.sin(bProgress * Math.PI) * 200 + (PAD_X - sepPt.x) * bProgress;
+                let currY = sepPt.y - Math.sin(bProgress * Math.PI) * 150 + (PAD_Y - sepPt.y) * bProgress;
+                
+                let currAngle;
+                if (bProgress < 0.25) { currAngle = sepAngle + (180 * (bProgress / 0.25)); } 
+                else if (bProgress < 0.85) { currAngle = 180; } 
+                else { currAngle = 180 + (180 * ((bProgress - 0.85) / 0.15)); }
+                DOM.booster.setAttribute('transform', `translate(${currX}, ${currY}) rotate(${currAngle})`);
+            }
+
+            // Progressive Engines
+            document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
+            if (isRunning && sessionState === 'WORK') {
+                if (progress < STAGING_MECO) {
+                    DOM.svgBooster.querySelectorAll('.eng-nozzle').forEach(e=>e.classList.add('hud-burning'));
+                    DOM.booster.classList.add('active-burn'); DOM.ship.classList.remove('active-burn');
+                } else if (progress < STAGING_SEP) {
+                    DOM.svgBooster.querySelectorAll('.b-inner').forEach(e=>e.classList.add('hud-burning'));
+                    DOM.booster.classList.add('active-burn'); DOM.ship.classList.remove('active-burn'); 
+                } else if (progress >= STAGING_SEP && progress < 0.9) {
+                    DOM.ship.classList.add('active-burn'); DOM.booster.classList.remove('active-burn');
+                    if (progress < 0.7) {
+                        DOM.svgShip.querySelectorAll('.eng-nozzle').forEach(e=>e.classList.add('hud-burning'));
+                    } else {
+                        DOM.svgShip.querySelectorAll('.s-sl').forEach(e=>e.classList.add('hud-burning'));
+                    }
+                }
+            } else {
+                DOM.booster.classList.remove('active-burn'); DOM.ship.classList.remove('active-burn');
+            }
+
+            let pitch = 90 - (progress * 90); 
+            let alt = Math.pow(progress, 1.5) * (activePlanet === 'mars' ? 400 : (activePlanet === 'moon' ? 300 : 150)); 
+            let vel = Math.pow(progress, 2) * (activePlanet === 'mars' ? 40000 : 28000); 
+
+            DOM.pitch.textContent = pitch.toFixed(1);
+            DOM.alt.textContent = Math.floor(alt).toLocaleString();
+            DOM.vel.textContent = Math.floor(vel).toLocaleString();
+
+            let phaseText = "T-MINUS HOLDING";
+            if (sessionState === 'PRELAUNCH') phaseText = "TERMINAL COUNT";
+            if (sessionState === 'WORK') {
+                if(progress > 0) phaseText = "ASCENT";
+                if(progress > 0.1) phaseText = "MAX-Q";
+                if(progress > STAGING_MECO) phaseText = "STAGE SEP";
+                if(progress > STAGING_SEP) phaseText = "ORBITAL BURN";
+                if(progress > 0.9) phaseText = "ORBIT INSERTION";
+                DOM.progress.style.backgroundColor = "var(--accent-main)";
+                DOM.phase.style.color = "var(--accent-main)";
+                if(progress > 0.08 && progress < 0.18) DOM.ship.classList.add('reentry'); else DOM.ship.classList.remove('reentry');
+            }
+            DOM.phase.textContent = phaseText;
+
+        } else if (sessionState === 'REST') {
+            DOM.progress.style.width = `${progress * 100}%`;
+            DOM.booster.setAttribute('transform', `translate(${PAD_X}, ${PAD_Y}) rotate(0)`);
+            DOM.booster.classList.remove('active-burn');
+            
+            const rLen = progress * returnPathLength;
+            const pt = DOM.returnPath.getPointAtLength(rLen);
+            const ptNext = DOM.returnPath.getPointAtLength(Math.min(rLen + 1, returnPathLength));
+            
+            let angle = Math.atan2(ptNext.y - pt.y, ptNext.x - pt.x) * (180 / Math.PI) - 90; 
+            
+            document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
+            
+            if (progress > 0.75) {
+                let flipProg = (progress - 0.75) / 0.25;
+                angle = angle + (0 - angle) * flipProg; 
+                if(isRunning && progress < 0.99) { 
+                    DOM.ship.classList.add('active-burn'); 
+                    DOM.svgShip.querySelectorAll('.s-sl').forEach(e=>e.classList.add('hud-burning'));
+                } else { 
+                    DOM.ship.classList.remove('active-burn'); 
+                }
+            } else {
+                DOM.ship.classList.remove('active-burn'); 
+            }
+            DOM.booster.classList.remove('active-burn');
+            
+            if(progress >= 1) DOM.ship.setAttribute('transform', `translate(${PAD_X}, ${PAD_Y}) rotate(0) translate(0, -120)`);
+            else DOM.ship.setAttribute('transform', `translate(${pt.x}, ${pt.y}) rotate(${angle}) translate(0, -120)`);
+            
+            DOM.ship.classList.remove('reentry');
+            DOM.pitch.textContent = "0.0";
+            DOM.alt.textContent = Math.floor((1 - progress) * 150).toLocaleString();
+            DOM.vel.textContent = Math.floor((1 - Math.min(1, progress/0.75)) * 28000).toLocaleString();
+            
+            DOM.progress.style.backgroundColor = "var(--accent-green)";
+            DOM.phase.style.color = "var(--accent-green)";
+            DOM.phase.textContent = progress > 0.75 ? "LANDING BURN" : "COAST / RETURN";
+        }
+
+        if (isRunning && sessionState === 'WORK') {
+            if (progress >= STAGING_MECO && !eventsLogged.meco) { logEvent("MECO. Boostback burn start."); eventsLogged.meco = true; }
+            if (progress >= STAGING_SEP && !eventsLogged.sep) { logEvent("Hot staging complete. Starship to orbit.", "success"); eventsLogged.sep = true; }
+            if (progress >= LANDING_DONE && !eventsLogged.land) { logEvent("Booster caught securely by Mechazilla.", "success"); eventsLogged.land = true; }
+        }
+    }
+
+    function renderLoop(now) {
+        if(!lastFrameTime) lastFrameTime = now;
+        
+        renderOrbits(now);
+
+        if (isRunning) {
+            let dt = ((now - lastFrameTime) / 1000) * speedMult;
+            let duration = sessionState === 'WORK' ? getWorkTime() : getRestTime();
+            
+            exactProgress += dt / duration;
+            
+            if (exactProgress >= 1) {
+                exactProgress = 1;
+                transitionState();
+            }
+
+            let secLeft = Math.ceil(duration * (1 - exactProgress));
+            updateTimeDisplay(secLeft);
+            updateVisuals(exactProgress);
+        }
+        lastFrameTime = now;
+        requestAnimationFrame(renderLoop);
+    }
+
+    function transitionState() {
+        if (sessionState === 'WORK') {
+            sessionState = 'REST';
+            exactProgress = 0;
+            completedMissions++;
+            
+            let baseDoge = Math.floor(getWorkTime() / 60);
+            let multiplier = activePlanet === 'mars' ? 10 : (activePlanet === 'moon' ? 5 : 1);
+            let earnedCoins = Math.max(1, baseDoge * multiplier); 
+            
+            dogeCurrency += earnedCoins; 
+            syncMetaUI();
+
+            logEvent(`SECO. Payload deployed. Earned ${earnedCoins} Ð.`, "success");
+            playSound('orbit');
+        } else if (sessionState === 'REST') {
+            sessionState = 'IDLE';
+            exactProgress = 0;
+            DOM.lowerHud.classList.remove('active');
+            DOM.bigLaunchWrapper.classList.remove('hidden');
+            updateTimeDisplay(getWorkTime());
+            updateVisuals(0); 
+            logEvent("Ship stacked. Ready for next manifest.", "success");
+            DOM.phase.textContent = "T-MINUS HOLDING";
+            DOM.phase.style.color = "var(--accent-main)";
+            isRunning = false;
+        }
+    }
+
+    function executeCountdown(t) {
+        if (sessionState !== 'PRELAUNCH') return; 
+        if (t > 0) {
+            DOM.time.textContent = `T- 00:0${t}`;
+            logEvent(`T-Minus ${t}...`);
+            playTone(1000, 'sine', 0.2);
+            countdownTimer = setTimeout(() => executeCountdown(t - 1), 1000);
+        } else {
+            playTone(800, 'square', 0.8);
+            sessionState = 'WORK';
+            exactProgress = 0;
+            eventsLogged = { meco: false, sep: false, land: false, exp: false };
+            playSound('launch');
+            
+            DOM.visualizerBg.classList.remove('launching');
+            void DOM.visualizerBg.offsetWidth;
+            DOM.visualizerBg.classList.add('launching');
+
+            isRunning = true;
+            lastFrameTime = performance.now();
+            logEvent("LIFTOFF.", "success");
+        }
+    }
+
+    function triggerPreLaunch() {
+        if (eventsLogged.exp || isRunning || sessionState !== 'IDLE') return; 
+        
+        sessionState = 'PRELAUNCH';
+        DOM.bigLaunchWrapper.classList.add('hidden');
+        DOM.lowerHud.classList.add('active');
+        
+        logEvent("Jonáš: Flight Dynamics GO.", "quote");
+        setTimeout(() => {
+            if(sessionState !== 'PRELAUNCH') return;
+            logEvent("Deniz: Avionics GO.", "quote");
+            setTimeout(() => executeCountdown(5), 500);
+        }, 800);
+    }
+
+    function resetTimer() {
+        if (sessionState === 'PRELAUNCH') {
+            logEvent("HOLD HOLD HOLD. Scrub commanded.", "error");
+            clearTimeout(countdownTimer);
+            sessionState = 'IDLE';
+            DOM.bigLaunchWrapper.classList.remove('hidden');
+            DOM.phase.textContent = "T-MINUS HOLDING";
+            DOM.lowerHud.classList.remove('active');
+            updateTimeDisplay(getWorkTime());
+            return;
+        }
+
+        if (sessionState === 'WORK' && exactProgress > 0) {
+            logEvent("FTS TERMINATION. Vehicle lost. Accounts drained.", "error");
+            dogeCurrency = 0;
+            syncMetaUI();
+            
+            eventsLogged.exp = true;
+            document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
+            DOM.ship.classList.add('exploded');
+            DOM.booster.classList.add('exploded');
+            playSound('exp');
+            
+            setTimeout(() => {
+                DOM.ship.classList.remove('exploded');
+                DOM.booster.classList.remove('exploded');
+                eventsLogged.exp = false;
+                fullReset();
+            }, 3000);
+        } else {
+            fullReset();
+        }
+    }
+
+    function fullReset() {
+        isRunning = false;
+        sessionState = 'IDLE';
+        exactProgress = 0;
+        DOM.bigLaunchWrapper.classList.remove('hidden');
+        DOM.lowerHud.classList.remove('active');
+        document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
+        updateTimeDisplay(getWorkTime());
+        logEvent("Pad reset. Systems nominal.");
+        eventsLogged = { meco: false, sep: false, land: false, exp: false };
+        DOM.visualizerBg.classList.remove('launching');
+        updateVisuals(0);
+    }
+
+    DOM.bigLaunchBtn.addEventListener('click', triggerPreLaunch);
+    DOM.reset.addEventListener('click', resetTimer);
+
+    DOM.btnStore.addEventListener('click', () => { DOM.storeModal.classList.add('active'); });
+    DOM.btnCloseStore.addEventListener('click', () => { DOM.storeModal.classList.remove('active'); });
+    
+    window.buyItem = function(itemKey) {
+        let item = upgrades[itemKey];
+        if (!item.owned) {
+            if (dogeCurrency >= item.cost) {
+                dogeCurrency -= item.cost;
+                item.owned = true;
+                item.active = true;
+                logEvent(`Acquired: ${itemKey.toUpperCase()}`, "loot");
+            } else {
+                alert("Insufficient DOGE balance.");
+                return;
+            }
+        } else {
+            item.active = !item.active;
+        }
+
+        if (itemKey === 'moon' && item.active) { activePlanet = 'moon'; upgrades.mars.active = false; }
+        if (itemKey === 'mars' && item.active) { activePlanet = 'mars'; upgrades.moon.active = false; }
+        if ((itemKey === 'moon' || itemKey === 'mars') && !item.active) { activePlanet = 'earth'; }
+
+        Object.keys(upgrades).forEach(key => {
+            if (upgrades[key].owned) {
+                const btn = document.getElementById('btn-' + key);
+                if(btn) {
+                    btn.textContent = upgrades[key].active ? "TOGGLE OFF" : "TOGGLE ON";
+                    btn.style.color = upgrades[key].active ? "#fff" : "#888";
+                    btn.style.borderColor = upgrades[key].active ? "#fff" : "#444";
+                }
+            }
+        });
+
+        syncMetaUI();
+    }
+
+    window.buyLootbox = function(cost) {
+        if (dogeCurrency >= cost) {
+            dogeCurrency -= cost;
+            let bonusMultiplier = Math.random() < 0.1 ? 42.0 : (Math.random() < 0.3 ? 6.9 : 1);
+            let totalBonus = Math.floor(Math.random() * cost * bonusMultiplier);
+            
+            dogeCurrency += totalBonus;
+            syncMetaUI();
+            playSound('loot');
+
+            const quote = elonQuotes[Math.floor(Math.random() * elonQuotes.length)];
+            DOM.quoteText.textContent = `"${quote}"`;
+            DOM.lootRewards.textContent = totalBonus > 0 ? `+ ${totalBonus} Ð STAKED!` : `STANDARD DATABANK RECEIVED.`;
+            
+            DOM.storeModal.classList.remove('active');
+            DOM.quoteModal.classList.add('active');
+            logEvent(`Wisdom extracted (${cost} Ð). Retrieved ${totalBonus} Ð!`, "loot");
+        } else {
+            alert("Insufficient DOGE balance.");
+        }
+    }
+
+    DOM.btnCloseQuote.addEventListener('click', () => DOM.quoteModal.classList.remove('active'));
+
+    DOM.mechazilla.addEventListener('click', () => {
+        const p = prompt("Enter override authorization code:");
+        if (p === "MEGA") {
+            DOM.tSpeed.value = speedMult;
+            DOM.tMissions.value = completedMissions;
+            DOM.tCurrency.value = dogeCurrency;
+            DOM.testModal.classList.add('active');
+        } else if(p !== null) {
+            alert("Access Denied.");
+        }
+    });
+
+    DOM.btnApplyTest.addEventListener('click', () => {
+        speedMult = parseFloat(DOM.tSpeed.value) || 1;
+        completedMissions = parseInt(DOM.tMissions.value) || 0;
+        dogeCurrency = parseInt(DOM.tCurrency.value) || 0;
+        syncMetaUI();
+        DOM.testModal.classList.remove('active');
+        logEvent(`SysAdmin Override: SPDx${speedMult}, MISx${completedMissions}, Ðx${dogeCurrency}`);
+    });
+
+</script>
+</body>
+</html>
