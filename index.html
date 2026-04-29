@@ -143,17 +143,18 @@
     }
     .big-launch-btn:hover { background: var(--accent-main); color: #000; box-shadow: 0 0 50px rgba(255,255,255,0.6); transform: scale(1.02);}
 
-    /* Top HUD Layout (One Line) */
+    /* Top HUD Layout */
     .top-hud {
         position: absolute; top: 0; left: 0; width: 100%; z-index: 20;
         display: grid; grid-template-columns: 1fr auto 1fr; align-items: start;
-        padding: 20px 40px; pointer-events: none; gap: 20px;
+        padding: 20px 40px; pointer-events: none; gap: 20px; transition: all 0.4s ease;
     }
 
     .todo-panel {
         pointer-events: auto; display: flex; flex-direction: column; gap: 10px; background: var(--hud-bg); 
         border: 1px solid var(--glass-border); border-radius: 4px; padding: 15px; 
         backdrop-filter: blur(12px); width: 320px; border-left: 4px solid var(--accent-main);
+        transition: all 0.4s ease;
     }
     .todo-header { font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 900; letter-spacing: 0.1em; }
     .todo-input { 
@@ -170,7 +171,7 @@
     .todo-item.done::before { content: 'X'; color: var(--accent-red); }
 
     .realtime-clock-wrapper {
-        pointer-events: auto; display: flex; justify-content: center; align-items: center;
+        pointer-events: auto; display: flex; justify-content: center; align-items: center; transition: all 0.4s ease;
     }
     .realtime-clock {
         font-family: 'JetBrains Mono'; font-size: 1.5rem; font-weight: 300; color: #fff;
@@ -179,8 +180,14 @@
     }
     .realtime-clock:hover { color: var(--accent-gold); border-color: var(--accent-gold); }
 
-    .top-right-group { display: flex; gap: 15px; align-items: flex-start; justify-content: flex-end; pointer-events: auto; }
+    .top-right-group { display: flex; gap: 15px; align-items: flex-start; justify-content: flex-end; pointer-events: auto; transition: all 0.4s ease; }
     
+    .btn-df-toggle {
+        background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted);
+        padding: 10px 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; cursor: pointer; transition: 0.2s; backdrop-filter: blur(12px);
+    }
+    .btn-df-toggle:hover { color: #fff; border-color: #fff; }
+
     .destination-badge {
         background: var(--hud-bg); border: 1px solid var(--glass-border); padding: 12px 20px;
         border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; text-transform: uppercase; font-weight: 900;
@@ -199,13 +206,14 @@
     .lower-hud {
         position: absolute; bottom: 15px; left: 0; width: 100%; height: 110px; z-index: 20;
         display: flex; justify-content: space-between; padding: 0 30px; gap: 15px; pointer-events: none; 
-        transition: opacity 0.5s, filter 0.5s; opacity: 0.4; filter: grayscale(80%);
+        transition: opacity 0.5s, filter 0.5s, transform 0.4s ease; opacity: 0.4; filter: grayscale(80%);
     }
     .lower-hud.active { opacity: 1; filter: grayscale(0%); pointer-events: auto; }
     
     .hud-panel {
         background: var(--hud-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
         border-top: 2px solid var(--accent-main); pointer-events: auto; display: flex; align-items: center;
+        transition: all 0.4s ease;
     }
     .hud-left { clip-path: polygon(0 0, 93% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 30px 10px 20px; justify-content: space-around;}
     .hud-center { clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%); flex: 1.5; padding: 10px; justify-content: center; gap: 40px;}
@@ -222,7 +230,7 @@
     .eng-nozzle { fill: #111; stroke: #333; stroke-width: 0.5; transition: all 0.1s; }
     .eng-nozzle.hud-burning { fill: #ffb700; stroke: var(--accent-orange); filter: drop-shadow(0 0 3px var(--accent-orange)); }
 
-    .center-hud-main { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 300px;}
+    .center-hud-main { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 300px; transition: all 0.4s ease;}
     .hud-phase { font-family: 'JetBrains Mono'; font-size: 0.9rem; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 900; margin-bottom: -2px; color: var(--accent-main);}
     .time { font-family: 'JetBrains Mono'; font-size: 3.5rem; white-space: nowrap; font-weight: 300; line-height: 1; letter-spacing: -0.05em; text-shadow: 0 0 15px rgba(255,255,255,0.2); transition: 0.2s;}
     
@@ -235,6 +243,8 @@
         text-transform: uppercase; font-weight: 900; cursor: pointer; transition: all 0.2s; margin-bottom: 5px;
     }
     .btn-scrub:hover { background: var(--accent-red); color: #fff; box-shadow: 0 0 15px rgba(255, 50, 50, 0.5); }
+    
+    .df-scrub { display: none; margin-top: 20px; }
 
     .com-log {
         background: transparent; border: none; padding: 0; flex: 1; width: 100%;
@@ -282,6 +292,50 @@
     .close-btn:hover { background: #555; }
 
     .locked-item { display: none; }
+
+    /* Distraction Free Mode */
+    body.df-mode .planet-glow, 
+    body.df-mode .master-svg, 
+    body.df-mode .hud-left, 
+    body.df-mode .hud-right, 
+    body.df-mode .engine-display-group,
+    body.df-mode .flame-overlay,
+    body.df-mode .destination-badge,
+    body.df-mode .realtime-clock-wrapper,
+    body.df-mode #mechazilla { display: none !important; }
+
+    body.df-mode .flight-visualizer { background: #000; }
+    
+    body.df-mode .top-hud { 
+        display: flex; flex-direction: column; align-items: center; padding-top: 60px; pointer-events: none;
+    }
+    body.df-mode .todo-panel { 
+        width: 90%; max-width: 450px; pointer-events: auto; 
+    }
+    body.df-mode .top-right-group { 
+        position: absolute; top: 15px; right: 15px; pointer-events: auto; 
+    }
+
+    body.df-mode .lower-hud {
+        bottom: auto; top: 50%; transform: translateY(-50%); justify-content: center; 
+        opacity: 1 !important; filter: none !important; pointer-events: none;
+    }
+    body.df-mode .hud-center { 
+        clip-path: none; background: transparent; border: none; flex: unset; width: 100%; 
+        align-items: center; padding: 0; pointer-events: auto;
+    }
+    body.df-mode .time { font-size: 7rem; }
+    body.df-mode .big-launch-wrapper { bottom: 15%; pointer-events: auto; }
+    body.df-mode .df-scrub { display: block; width: 250px; }
+
+    /* Mobile Overrides */
+    @media (max-width: 768px) {
+        .btn-df-toggle { display: none !important; }
+        body.df-mode .time { font-size: 5rem; }
+        .start-menu h1 { font-size: 2rem; }
+        .big-launch-btn { font-size: 1.5rem; padding: 15px 40px; }
+    }
+
 </style>
 </head>
 <body class="env-earth" id="bodyEnv">
@@ -429,6 +483,7 @@
         </div>
 
         <div class="top-right-group">
+            <button class="btn-df-toggle" id="btnDfToggle">ZEN MODE</button>
             <div class="destination-badge" id="destBadge">LEO INSERTION</div>
             <div class="wallet-badge" id="btnStore" title="Access Terminal">
                 <span>Ð</span> <span id="dogeCount">0</span>
@@ -458,7 +513,7 @@
 
         <div class="hud-panel hud-center">
             <div class="engine-display-group">
-                <div style="text-align: center; margin-left: 15px;">
+                <div style="text-align: center; padding-left: 15px;">
                     <span class="config-label" style="display:block; margin-bottom:2px;">BOOSTER</span>
                     <svg viewBox="0 0 100 100" class="engine-viz" id="svgBooster"></svg>
                 </div>
@@ -474,6 +529,7 @@
                 <div class="progress-bar-container">
                     <div class="progress-bar" id="progressBar"></div>
                 </div>
+                <button class="btn-scrub df-scrub" id="btnDfReset">SCRUB / FTS</button>
             </div>
         </div>
 
@@ -618,6 +674,7 @@
     let dogeCurrency = 0;
     let activePlanet = 'earth';
     let eventsLogged = { meco: false, sep: false, land: false, exp: false };
+    let isDfMode = false;
     
     let upgrades = { 
         crew: { owned: false, active: false, cost: 1000 }, 
@@ -663,6 +720,7 @@
         ship: document.getElementById('starship'),
         booster: document.getElementById('booster'),
         reset: document.getElementById('btnReset'),
+        dfReset: document.getElementById('btnDfReset'),
         log: document.getElementById('missionLog'),
         workIn: document.getElementById('workInput'),
         restIn: document.getElementById('restInput'),
@@ -691,7 +749,8 @@
         mechazilla: document.getElementById('mechazilla'),
         realtimeClock: document.getElementById('realtimeClock'),
         timerModal: document.getElementById('timerModal'),
-        btnApplyTimer: document.getElementById('btnApplyTimer')
+        btnApplyTimer: document.getElementById('btnApplyTimer'),
+        btnDfToggle: document.getElementById('btnDfToggle')
     };
 
     function saveMokusData() {
@@ -699,7 +758,7 @@
             text: li.textContent,
             done: li.classList.contains('done')
         }));
-        const data = { completedMissions, dogeCurrency, upgrades, activePlanet, todos };
+        const data = { completedMissions, dogeCurrency, upgrades, activePlanet, todos, isDfMode };
         localStorage.setItem('mokusData', JSON.stringify(data));
     }
 
@@ -726,6 +785,12 @@
                         DOM.todoList.appendChild(li);
                     });
                 }
+
+                if (data.isDfMode !== undefined && window.innerWidth > 768) {
+                    isDfMode = data.isDfMode;
+                    document.body.classList.toggle('df-mode', isDfMode);
+                    DOM.btnDfToggle.textContent = isDfMode ? "NORMAL MODE" : "ZEN MODE";
+                }
                 
                 Object.keys(upgrades).forEach(key => {
                     if (upgrades[key].owned) {
@@ -743,7 +808,26 @@
         }
     }
 
+    function checkMobileEnv() {
+        if (window.innerWidth <= 768 || /Mobi|Android/i.test(navigator.userAgent)) {
+            document.body.classList.add('df-mode');
+        } else if (!isDfMode) {
+            document.body.classList.remove('df-mode');
+        }
+    }
+
+    window.addEventListener('resize', checkMobileEnv);
     loadMokusData();
+    checkMobileEnv();
+
+    if (DOM.btnDfToggle) {
+        DOM.btnDfToggle.addEventListener('click', () => {
+            isDfMode = !isDfMode;
+            document.body.classList.toggle('df-mode', isDfMode);
+            DOM.btnDfToggle.textContent = isDfMode ? "NORMAL MODE" : "ZEN MODE";
+            saveMokusData();
+        });
+    }
 
     // Live Clock
     setInterval(() => {
@@ -910,6 +994,10 @@
         else if (activePlanet === 'moon') { DOM.bodyEnv.classList.add('env-moon'); DOM.destBadge.textContent = "LUNAR GATEWAY"; } 
         else { DOM.bodyEnv.classList.add('env-earth'); DOM.destBadge.textContent = "LEO INSERTION"; }
 
+        if (document.body.classList.contains('df-mode')) {
+            DOM.bodyEnv.classList.add('df-mode');
+        }
+
         document.body.classList.toggle('flamethrower-active', upgrades.flame.active);
         initOrbitalData(); 
     }
@@ -998,8 +1086,7 @@
                 } else if (progress >= STAGING_SEP && progress < 0.9) {
                     DOM.ship.classList.add('active-burn'); 
                     
-                    // Booster RTLS Burns
-                    if ((progress > 0.27 && progress < 0.32) || (progress > 0.45 && progress < 0.50)) {
+                    if (progress < LANDING_DONE && ((progress > 0.27 && progress < 0.32) || (progress > 0.45 && progress < 0.50))) {
                         DOM.booster.classList.add('active-burn');
                         DOM.svgBooster.querySelectorAll('.b-inner').forEach(e=>e.classList.add('hud-burning'));
                     } else {
@@ -1229,6 +1316,7 @@
 
     DOM.bigLaunchBtn.addEventListener('click', triggerPreLaunch);
     DOM.reset.addEventListener('click', resetTimer);
+    DOM.dfReset.addEventListener('click', resetTimer);
 
     DOM.btnStore.addEventListener('click', () => { DOM.storeModal.classList.add('active'); });
     DOM.btnCloseStore.addEventListener('click', () => { DOM.storeModal.classList.remove('active'); });
@@ -1295,7 +1383,7 @@
 
     DOM.mechazilla.addEventListener('click', () => {
         const p = prompt("Enter override authorization code:");
-        if (p === "MEGA") {
+        if (p && btoa(p.toUpperCase()) === "RE9HRQ==") {
             DOM.tSpeed.value = speedMult;
             DOM.tMissions.value = completedMissions;
             DOM.tCurrency.value = dogeCurrency;
