@@ -458,7 +458,7 @@
 
         <div class="hud-panel hud-center">
             <div class="engine-display-group">
-                <div style="text-align: center;">
+                <div style="text-align: center; margin-left: 15px;">
                     <span class="config-label" style="display:block; margin-bottom:2px;">BOOSTER</span>
                     <svg viewBox="0 0 100 100" class="engine-viz" id="svgBooster"></svg>
                 </div>
@@ -694,6 +694,57 @@
         btnApplyTimer: document.getElementById('btnApplyTimer')
     };
 
+    function saveMokusData() {
+        const todos = Array.from(DOM.todoList.children).map(li => ({
+            text: li.textContent,
+            done: li.classList.contains('done')
+        }));
+        const data = { completedMissions, dogeCurrency, upgrades, activePlanet, todos };
+        localStorage.setItem('mokusData', JSON.stringify(data));
+    }
+
+    function loadMokusData() {
+        const dataStr = localStorage.getItem('mokusData');
+        if (dataStr) {
+            try {
+                const data = JSON.parse(dataStr);
+                completedMissions = data.completedMissions || 0;
+                dogeCurrency = data.dogeCurrency || 0;
+                if (data.upgrades) upgrades = data.upgrades;
+                if (data.activePlanet) activePlanet = data.activePlanet;
+                
+                if (data.todos && Array.isArray(data.todos)) {
+                    DOM.todoList.innerHTML = '';
+                    data.todos.forEach(t => {
+                        const li = document.createElement('li');
+                        li.className = 'todo-item' + (t.done ? ' done' : '');
+                        li.textContent = t.text;
+                        li.addEventListener('click', () => {
+                            li.classList.toggle('done');
+                            saveMokusData();
+                        });
+                        DOM.todoList.appendChild(li);
+                    });
+                }
+                
+                Object.keys(upgrades).forEach(key => {
+                    if (upgrades[key].owned) {
+                        const btn = document.getElementById('btn-' + key);
+                        if(btn) {
+                            btn.textContent = upgrades[key].active ? "TOGGLE OFF" : "TOGGLE ON";
+                            btn.style.color = upgrades[key].active ? "#fff" : "#888";
+                            btn.style.borderColor = upgrades[key].active ? "#fff" : "#444";
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Save data parse error", e);
+            }
+        }
+    }
+
+    loadMokusData();
+
     // Live Clock
     setInterval(() => {
         DOM.realtimeClock.textContent = new Date().toLocaleTimeString('en-US', {hour12: false});
@@ -705,9 +756,13 @@
             const li = document.createElement('li');
             li.className = 'todo-item';
             li.textContent = DOM.todoInput.value.trim();
-            li.addEventListener('click', () => li.classList.toggle('done'));
+            li.addEventListener('click', () => {
+                li.classList.toggle('done');
+                saveMokusData();
+            });
             DOM.todoList.appendChild(li);
             DOM.todoInput.value = '';
+            saveMokusData();
         }
     });
 
@@ -941,7 +996,16 @@
                     DOM.svgBooster.querySelectorAll('.b-inner').forEach(e=>e.classList.add('hud-burning'));
                     DOM.booster.classList.add('active-burn'); DOM.ship.classList.remove('active-burn'); 
                 } else if (progress >= STAGING_SEP && progress < 0.9) {
-                    DOM.ship.classList.add('active-burn'); DOM.booster.classList.remove('active-burn');
+                    DOM.ship.classList.add('active-burn'); 
+                    
+                    // Booster RTLS Burns
+                    if ((progress > 0.27 && progress < 0.32) || (progress > 0.45 && progress < 0.50)) {
+                        DOM.booster.classList.add('active-burn');
+                        DOM.svgBooster.querySelectorAll('.b-inner').forEach(e=>e.classList.add('hud-burning'));
+                    } else {
+                        DOM.booster.classList.remove('active-burn');
+                    }
+
                     if (progress < 0.7) {
                         DOM.svgShip.querySelectorAll('.eng-nozzle').forEach(e=>e.classList.add('hud-burning'));
                     } else {
@@ -1057,6 +1121,7 @@
             
             dogeCurrency += earnedCoins; 
             syncMetaUI();
+            saveMokusData();
 
             logEvent(`SECO. Payload deployed. Earned ${earnedCoins} Ð.`, "success");
             playSound('orbit');
@@ -1129,6 +1194,7 @@
             logEvent("FTS TERMINATION. Vehicle lost. Accounts drained.", "error");
             dogeCurrency = 0;
             syncMetaUI();
+            saveMokusData();
             
             eventsLogged.exp = true;
             document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
@@ -1199,6 +1265,7 @@
         });
 
         syncMetaUI();
+        saveMokusData();
     }
 
     window.buyLootbox = function(cost) {
@@ -1209,6 +1276,7 @@
             
             dogeCurrency += totalBonus;
             syncMetaUI();
+            saveMokusData();
             playSound('loot');
 
             const quote = elonQuotes[Math.floor(Math.random() * elonQuotes.length)];
@@ -1242,10 +1310,12 @@
         completedMissions = parseInt(DOM.tMissions.value) || 0;
         dogeCurrency = parseInt(DOM.tCurrency.value) || 0;
         syncMetaUI();
+        saveMokusData();
         DOM.testModal.classList.remove('active');
         logEvent(`SysAdmin Override: SPDx${speedMult}, MISx${completedMissions}, Ðx${dogeCurrency}`);
     });
 
+    syncMetaUI();
 </script>
 </body>
 </html>
