@@ -337,7 +337,7 @@
 
     /* Distraction Free Mode (Zen Mode) */
     body.df-mode .flight-visualizer { background: #000; }
-    body.df-mode .stars, body.df-mode .planet-glow { opacity: 100; }
+    body.df-mode .stars, body.df-mode .planet-glow { opacity: 0.1; }
     body.df-mode .top-hud .todo-panel,
     body.df-mode .top-hud .destination-badge,
     body.df-mode .top-hud .wallet-badge,
@@ -356,7 +356,7 @@
         opacity: 1 !important; filter: none !important; pointer-events: none; height: auto;
     }
     body.df-mode .hud-center { 
-        clip-path: none; background: black; border: none; flex: unset; width: 100%; 
+        clip-path: none; background: transparent; border: none; flex: unset; width: 100%; 
         align-items: center; padding: 0; pointer-events: auto; box-shadow: none;
     }
     body.df-mode .time { font-size: 8rem; text-shadow: 0 0 40px rgba(255,255,255,0.2); }
