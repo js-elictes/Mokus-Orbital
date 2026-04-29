@@ -22,7 +22,5 @@ Base reality is Earth. You must scale operations by unlocking higher-tier gravit
 * **Lunar Gateway (1,000 Ð):** Shifts environmental variables to lunar conditions. Applies a hard 5x multiplier to base Doge extraction.
 * **Mars Base Alpha (5,000 Ð):** 10x multiplier. The ultimate hedge against Earth-based failure modes.
 * **Boring Flamethrower (5,000 Ð):** Injects a persistent screen-blend fire overlay across the entire DOM because it is objectively funny.
-
-git clone [https://github.com/js-elictes/Mokus-Orbital.git](https://github.com/js-elictes/Mokus-Orbital.git)
 cd Mokus-Orbital
 # open index.html in any modern browser
