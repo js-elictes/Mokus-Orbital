@@ -35,7 +35,8 @@
         transition: opacity 0.5s ease;
     }
     .start-menu.hidden { opacity: 0; pointer-events: none; }
-    .start-menu h1 { font-family: 'JetBrains Mono'; font-size: 3.5rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; text-align: center; text-shadow: 0 0 20px rgba(255,255,255,0.2);}
+    .tribute-text { font-family: 'JetBrains Mono'; color: var(--accent-gold); letter-spacing: 0.2em; font-size: 0.8rem; margin-bottom: 30px; text-transform: uppercase; }
+    .start-menu h1 { font-family: 'JetBrains Mono'; font-size: 3.5rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; text-align: center; text-shadow: 0 0 20px rgba(255,255,255,0.2);}
     .start-menu p { color: var(--text-muted); margin-bottom: 40px; font-family: 'JetBrains Mono'; text-align: center;}
     .btn-init {
         background: transparent; border: 2px solid #fff; color: #fff; padding: 15px 40px;
@@ -46,6 +47,21 @@
 
     .app-container { position: relative; width: 100vw; height: 100vh; }
     
+    @keyframes sysShake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-2px, -3px) rotate(-1deg); }
+        20% { transform: translate(-4px, 0px) rotate(1deg); }
+        30% { transform: translate(4px, 3px) rotate(0deg); }
+        40% { transform: translate(2px, -2px) rotate(1deg); }
+        50% { transform: translate(-2px, 3px) rotate(-1deg); }
+        60% { transform: translate(-4px, 2px) rotate(0deg); }
+        70% { transform: translate(4px, 2px) rotate(-1deg); }
+        80% { transform: translate(-2px, -2px) rotate(1deg); }
+        90% { transform: translate(2px, 3px) rotate(0deg); }
+        100% { transform: translate(1px, -3px) rotate(-1deg); }
+    }
+    .shake-active { animation: sysShake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
     body.flamethrower-active { cursor: crosshair; }
     .flame-overlay {
         position: absolute; bottom: 0; left: 0; width: 100%; height: 30vh;
@@ -147,6 +163,7 @@
         color: var(--accent-main); font-family: 'JetBrains Mono'; font-size: 2.2rem; font-weight: 900;
         padding: 20px 90px; cursor: pointer; border: none; position: relative;
         text-transform: uppercase; letter-spacing: 0.15em; 
+        -webkit-clip-path: polygon(25px 0, 100% 0, calc(100% - 25px) 100%, 0 100%);
         clip-path: polygon(25px 0, 100% 0, calc(100% - 25px) 100%, 0 100%);
         transition: all 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
     }
@@ -157,13 +174,13 @@
     .big-launch-btn::after {
         content: ''; position: absolute; inset: 1px; z-index: -1;
         background: rgba(5, 5, 5, 0.7); 
+        -webkit-clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
         clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
         transition: background 0.3s ease;
     }
     .big-launch-btn:hover { transform: scale(1.02); }
     .big-launch-btn:hover::after { background: rgba(30, 30, 30, 0.6); }
 
-    /* Top HUD Elements */
     .top-hud {
         position: absolute; top: 0; left: 0; width: 100%; z-index: 20;
         display: grid; grid-template-columns: 1fr auto 1fr; align-items: start;
@@ -173,7 +190,8 @@
     .todo-panel {
         pointer-events: auto; background: var(--hud-bg); 
         border: 1px solid var(--glass-border); border-radius: 4px; padding: 15px; 
-        backdrop-filter: blur(12px); width: 320px; border-left: 4px solid var(--accent-main);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
+        width: 320px; border-left: 4px solid var(--accent-main);
         transition: all 0.4s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
     .todo-header-row {
@@ -207,11 +225,12 @@
         height: 42px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;
     }
 
-    .realtime-clock-wrapper { pointer-events: auto; transition: all 0.4s ease; }
+    .realtime-clock-wrapper { pointer-events: auto; transition: all 0.4s ease; display: flex; align-items: center; gap: 10px; }
+    .favicon-hud { height: 28px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.4)); transition: all 0.3s; }
     .realtime-clock {
         font-family: 'JetBrains Mono'; font-size: 1.2rem; font-weight: 400; color: #fff;
         background: var(--hud-bg); padding: 0 25px; border-radius: 4px; border: 1px solid var(--glass-border);
-        backdrop-filter: blur(12px); text-shadow: 0 0 10px rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s ease;
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); text-shadow: 0 0 10px rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s ease;
         box-shadow: 0 4px 20px rgba(0,0,0,0.5); letter-spacing: 0.05em;
     }
     .realtime-clock:hover { color: var(--accent-gold); border-color: var(--accent-gold); box-shadow: 0 0 20px rgba(255,215,0,0.2); }
@@ -220,20 +239,20 @@
     
     .btn-df-toggle {
         background: var(--hud-bg); border: 1px solid var(--glass-border); color: var(--text-muted);
-        padding: 0 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(12px);
+        padding: 0 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
     .btn-df-toggle:hover { color: #fff; border-color: #fff; }
 
     .destination-badge {
         background: var(--hud-bg); border: 1px solid var(--glass-border); padding: 0 20px;
         border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; text-transform: uppercase; font-weight: 900;
-        backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
 
     .wallet-badge {
         background: rgba(255, 215, 0, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold);
         padding: 0 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 1rem; font-weight: 900;
-        gap: 8px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(12px);
+        gap: 8px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
     .wallet-badge:hover { background: var(--accent-gold); color: #000; box-shadow: 0 0 25px rgba(255,215,0,0.5); }
@@ -247,13 +266,13 @@
     .lower-hud.active { opacity: 1; filter: grayscale(0%); pointer-events: auto; }
     
     .hud-panel {
-        background: var(--hud-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
+        background: var(--hud-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
         border-top: 2px solid var(--accent-main); pointer-events: auto; display: flex; align-items: center;
         transition: all 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-    .hud-left { clip-path: polygon(0 0, 93% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 30px 10px 20px; justify-content: space-around;}
-    .hud-center { clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%); flex: 1.5; padding: 10px; justify-content: center; gap: 40px;}
-    .hud-right { clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 20px 10px 30px; display: flex; flex-direction: column;}
+    .hud-left { -webkit-clip-path: polygon(0 0, 93% 0, 100% 100%, 0 100%); clip-path: polygon(0 0, 93% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 30px 10px 20px; justify-content: space-around;}
+    .hud-center { -webkit-clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%); clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%); flex: 1.5; padding: 10px; justify-content: center; gap: 40px;}
+    .hud-right { -webkit-clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%); clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 20px 10px 30px; display: flex; flex-direction: column;}
 
     .t-block { display: flex; flex-direction: column; gap: 2px; border-left: 2px solid var(--accent-main); padding-left: 8px;}
     .t-label { font-family: 'JetBrains Mono'; font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; }
@@ -296,7 +315,7 @@
     .modal-overlay {
         position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
         display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .modal-content {
@@ -321,6 +340,7 @@
     .lootbox-title .modal-title { color: var(--accent-gold); }
     .lootbox-quote { font-size: 1rem; font-style: italic; line-height: 1.5; margin: 15px 0; color: #fff; font-family: 'Inter'; }
     .lootbox-rewards { font-family: 'JetBrains Mono'; font-size: 1.2rem; color: var(--accent-green); font-weight: 900; margin-bottom: 15px;}
+    .slot-machine { font-size: 2.5rem; letter-spacing: 0.2em; font-family: 'JetBrains Mono'; margin: 20px 0; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.4);}
 
     .test-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .test-form label { font-family: 'JetBrains Mono'; font-size: 0.6rem; color: #fff; text-transform: uppercase; font-weight: bold;}
@@ -342,14 +362,13 @@
 
     .config-label {
         font-family: 'JetBrains Mono';
-        font-size: 0.5rem; /* Reduced from default to ~half size */
+        font-size: 0.5rem;
         letter-spacing: 0.05em;
         color: var(--text-muted);
         text-transform: uppercase;
         font-weight: 700;
     }
 
-    /* Distraction Free Mode (Zen Mode) */
     body.df-mode .flight-visualizer { background: #000; }
     body.df-mode .app-container::before { display: none !important; }
     body.df-mode .stars, 
@@ -374,7 +393,7 @@
         opacity: 1 !important; filter: none !important; pointer-events: none; height: auto;
     }
     body.df-mode .hud-center { 
-        clip-path: none; background: transparent; border: none; flex: unset; width: 100%; 
+        clip-path: none; -webkit-clip-path: none; background: transparent; border: none; flex: unset; width: 100%; 
         align-items: center; padding: 0; pointer-events: auto; box-shadow: none;
     }
     body.df-mode .time { font-size: 8rem; text-shadow: 0 0 40px rgba(255,255,255,0.2); }
@@ -386,7 +405,9 @@
 <body class="env-earth" id="bodyEnv">
 
 <div class="start-menu" id="startMenu">
+    <img src="favicon.ico" alt="Mokus Icon" style="width: 90px; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));">
     <h1>MOKUS ORBITAL</h1>
+    <div class="tribute-text">A TRIBUTE TO JONÁŠ & DENIZ</div>
     <p>Acknowledge flight readiness to initialize telemetry systems.</p>
     <button class="btn-init" id="btnInitLaunch">ACKNOWLEDGE</button>
 </div>
@@ -558,6 +579,7 @@
         </div>
 
         <div class="realtime-clock-wrapper top-element-standard">
+            <img src="favicon.ico" alt="" class="favicon-hud">
             <div class="realtime-clock top-element-standard" id="realtimeClock" title="Configure Flight Duration">00:00</div>
         </div>
 
@@ -630,14 +652,14 @@
                         <h3>Tier I: Meme Data (10 Ð)</h3>
                         <p>Standard orbital wisdom extraction.</p>
                     </div>
-                    <button class="buy-btn" onclick="buyLootbox(10)">DECODE</button>
+                    <button class="buy-btn" onclick="triggerCasino(10)">DECODE</button>
                 </div>
                 <div class="store-item">
                     <div>
                         <h3>Tier II: FSD Beta (50 Ð)</h3>
-                        <p>Rare telemetry & moderate Doge multiplier.</p>
+                        <p>High variance telemetry parsing.</p>
                     </div>
-                    <button class="buy-btn" onclick="buyLootbox(50)">DECODE</button>
+                    <button class="buy-btn" onclick="triggerCasino(50)">DECODE</button>
                 </div>
                 <div class="store-item" id="block-tesla">
                     <div>
@@ -704,9 +726,10 @@
 
     <div class="modal-overlay" id="quoteModal">
         <div class="modal-content lootbox-title">
-            <div class="modal-title">𝕏 Transmission Decoded</div>
-            <div class="lootbox-quote" id="quoteText">"..."</div>
+            <div class="modal-title">𝕏 Transmission Link</div>
+            <div class="slot-machine" id="slotDisplay">[ - - - ]</div>
             <div class="lootbox-rewards" id="lootRewards"></div>
+            <div class="lootbox-quote" id="quoteText">"..."</div>
             <button class="close-btn" id="btnCloseQuote">ACKNOWLEDGE</button>
         </div>
     </div>
@@ -743,7 +766,7 @@
     const PAD_Y = 720;
     const PAD_X = 300;
     
-    let sessionState = 'IDLE'; // IDLE, PRELAUNCH, WORK, REST
+    let sessionState = 'IDLE';
     let exactProgress = 0;
     let isRunning = false;
     let countdownTimer = null;
@@ -817,6 +840,7 @@
         quoteModal: document.getElementById('quoteModal'),
         quoteText: document.getElementById('quoteText'),
         lootRewards: document.getElementById('lootRewards'),
+        slotDisplay: document.getElementById('slotDisplay'),
         btnCloseStore: document.getElementById('btnCloseStore'),
         btnCloseQuote: document.getElementById('btnCloseQuote'),
         visualizerBg: document.getElementById('visualizerBg'),
@@ -1446,40 +1470,87 @@
         saveMokusData();
     }
 
-    window.buyLootbox = function(cost) {
-        if (dogeCurrency >= cost) {
-            dogeCurrency -= cost;
-            let bonusMultiplier = Math.random() < 0.1 ? 42.0 : (Math.random() < 0.3 ? 6.9 : 1);
-            let totalBonus = Math.floor(Math.random() * cost * bonusMultiplier);
-            
-            dogeCurrency += totalBonus;
-            syncMetaUI();
-            saveMokusData();
-            playSound('loot');
-
-            const quote = elonQuotes[Math.floor(Math.random() * elonQuotes.length)];
-            DOM.quoteText.textContent = `"${quote}"`;
-            DOM.lootRewards.textContent = totalBonus > 0 ? `+ ${totalBonus} Ð STAKED!` : `STANDARD DATABANK RECEIVED.`;
-            
-            DOM.storeModal.classList.remove('active');
-            DOM.quoteModal.classList.add('active');
-            logEvent(`Wisdom extracted (${cost} Ð). Retrieved ${totalBonus} Ð!`, "loot");
-        } else {
+    window.triggerCasino = function(cost) {
+        if (dogeCurrency < cost) {
             alert("Insufficient DOGE balance.");
+            return;
         }
+        dogeCurrency -= cost;
+        syncMetaUI();
+        
+        DOM.storeModal.classList.remove('active');
+        DOM.quoteModal.classList.add('active');
+        DOM.quoteText.textContent = "ESTABLISHING SECURE LINK...";
+        DOM.lootRewards.innerHTML = "";
+        
+        let rolls = 0;
+        let maxRolls = 20;
+        playSound('launch');
+
+        let rollInt = setInterval(() => {
+            rolls++;
+            DOM.slotDisplay.textContent = `[ ${Math.floor(Math.random()*10)} ${Math.floor(Math.random()*10)} ${Math.floor(Math.random()*10)} ]`;
+            if (rolls >= maxRolls) {
+                clearInterval(rollInt);
+                finalizeLootbox(cost);
+            }
+        }, 50);
+    }
+
+    function finalizeLootbox(cost) {
+        let rand = Math.random();
+        let payout = 0;
+        let finalDisplay = "";
+
+        if (rand < 0.65) {
+            payout = Math.floor(Math.random() * (cost * 0.3));
+            finalDisplay = `[ 0 0 0 ]`;
+        } else if (rand < 0.90) {
+            payout = Math.floor(cost * (0.8 + Math.random() * 0.7));
+            finalDisplay = `[ 7 7 2 ]`;
+        } else if (rand < 0.98) {
+            payout = Math.floor(cost * (2 + Math.random() * 2));
+            finalDisplay = `[ 7 7 7 ]`;
+        } else {
+            payout = cost * 10;
+            finalDisplay = `[ 💎 💎 💎 ]`;
+        }
+
+        dogeCurrency += payout;
+        syncMetaUI();
+        saveMokusData();
+        DOM.slotDisplay.textContent = finalDisplay;
+
+        if (payout >= cost * 2) {
+            playSound('loot');
+            document.body.classList.add('shake-active');
+            setTimeout(() => document.body.classList.remove('shake-active'), 500);
+            DOM.lootRewards.innerHTML = `<span style="color: var(--accent-gold);">MEGA HIT! + ${payout} Ð</span>`;
+        } else if (payout > 0) {
+            playSound('loot');
+            DOM.lootRewards.innerHTML = `<span style="color: var(--accent-green);">+ ${payout} Ð STAKED!</span>`;
+        } else {
+            playSound('exp');
+            DOM.lootRewards.innerHTML = `<span style="color: var(--accent-red);">RUG PULLED. NO DATA RECOVERED.</span>`;
+        }
+
+        DOM.quoteText.textContent = `"${elonQuotes[Math.floor(Math.random() * elonQuotes.length)]}"`;
+        logEvent(`Gambled ${cost} Ð. Retrieved ${payout} Ð.`, payout > cost ? "loot" : "error");
     }
 
     DOM.btnCloseQuote.addEventListener('click', () => DOM.quoteModal.classList.remove('active'));
 
     DOM.mechazilla.addEventListener('click', () => {
-        const p = prompt("Enter override authorization code:");
-        if (p && btoa(p.toUpperCase()) === "RE9HRQ==") {
+        const p = prompt("ENTER SYSADMIN AUTHORIZATION:");
+        if (p && btoa(p) === "SkQgTW9rdXM=") {
             DOM.tSpeed.value = speedMult;
             DOM.tMissions.value = completedMissions;
             DOM.tCurrency.value = dogeCurrency;
             DOM.testModal.classList.add('active');
         } else if(p !== null) {
-            alert("Access Denied.");
+            logEvent("UNAUTHORIZED ACCESS ATTEMPT DETECTED.", "error");
+            document.body.classList.add('shake-active');
+            setTimeout(() => document.body.classList.remove('shake-active'), 500);
         }
     });
 
