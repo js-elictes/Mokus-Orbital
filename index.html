@@ -45,7 +45,16 @@
     .start-menu.hidden { opacity: 0; pointer-events: none; }
     .tribute-text { font-family: 'JetBrains Mono'; color: var(--accent-gold); letter-spacing: 0.2em; font-size: 0.8rem; margin-bottom: 30px; text-transform: uppercase; }
     .start-menu h1 { font-family: 'JetBrains Mono'; font-size: 3.5rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; text-align: center; text-shadow: 0 0 20px rgba(255,255,255,0.2);}
-    .start-menu p { color: var(--text-muted); margin-bottom: 40px; font-family: 'JetBrains Mono'; text-align: center;}
+    .start-menu p { color: var(--text-muted); margin-bottom: 20px; font-family: 'JetBrains Mono'; text-align: center;}
+    
+    .profile-readout {
+        font-family: 'JetBrains Mono'; font-size: 0.85rem; color: var(--accent-green);
+        background: rgba(0, 255, 102, 0.05); border: 1px solid var(--accent-green);
+        padding: 15px 25px; border-radius: 4px; margin-bottom: 30px; display: none;
+        text-align: left; line-height: 1.5; box-shadow: 0 0 20px rgba(0,255,102,0.1);
+    }
+    .profile-readout span { color: #fff; font-weight: bold; }
+
     .btn-init {
         background: transparent; border: 2px solid #fff; color: #fff; padding: 15px 40px;
         font-family: 'JetBrains Mono'; font-size: 1.2rem; font-weight: 900; cursor: pointer;
@@ -335,6 +344,15 @@
     <img src="favicon.ico" alt="Mokus Icon" style="width: 90px; margin-bottom: 15px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));">
     <h1>MOKUS ORBITAL</h1>
     <div class="tribute-text">A TRIBUTE TO JONÁŠ & DENIZ</div>
+    
+    <!-- Explicit Profile Acknowledgment -->
+    <div class="profile-readout" id="profileReadout">
+        LOCAL PROFILE DETECTED.<br>
+        ACCOUNT AGE: <span id="prAge">0 Days</span><br>
+        MISSIONS FLOWN: <span id="prMiss">0</span><br>
+        NET WORTH: <span id="prDoge">0</span> Ð
+    </div>
+
     <p>Acknowledge flight readiness to initialize telemetry systems.</p>
     <button class="btn-init" id="btnInitLaunch">ACKNOWLEDGE</button>
 </div>
@@ -751,6 +769,8 @@
 <script>
     const STAGING_MECO = 0.25; const STAGING_SEP = 0.26; const LANDING_DONE = 0.50; const PAD_Y = 720; const PAD_X = 300;
     let sessionState = 'IDLE'; let exactProgress = 0; let isRunning = false; let countdownTimer = null; let lastFrameTime = 0; let speedMult = 1; let totalPathLength = 0; let returnPathLength = 0;
+    
+    let accountCreated = 0;
     let completedMissions = 0; let dogeCurrency = 0; let activePlanet = 'earth'; let eventsLogged = { meco: false, sep: false, land: false, exp: false }; let isDfMode = false;
     
     let upgrades = { 
@@ -794,7 +814,8 @@
         tMissions: document.getElementById('testMissions'), tCurrency: document.getElementById('testCurrency'), mechazilla: document.getElementById('mechazilla'), realtimeClock: document.getElementById('realtimeClock'),
         timerModal: document.getElementById('timerModal'), btnApplyTimer: document.getElementById('btnApplyTimer'), btnDfToggle: document.getElementById('btnDfToggle'), gachaOverlay: document.getElementById('gachaOverlay'),
         gachaPod: document.getElementById('gachaPod'), gachaResult: document.getElementById('gachaResult'), resTier: document.getElementById('resTier'), resTitle: document.getElementById('resTitle'),
-        resDesc: document.getElementById('resDesc'), resValue: document.getElementById('resValue'), btnGachaNext: document.getElementById('btnGachaNext'), particleContainer: document.getElementById('particleContainer')
+        resDesc: document.getElementById('resDesc'), resValue: document.getElementById('resValue'), btnGachaNext: document.getElementById('btnGachaNext'), particleContainer: document.getElementById('particleContainer'),
+        profileReadout: document.getElementById('profileReadout'), prAge: document.getElementById('prAge'), prMiss: document.getElementById('prMiss'), prDoge: document.getElementById('prDoge')
     };
 
     function createTodoItem(text, done) {
@@ -808,7 +829,7 @@
 
     function saveMokusData() {
         const todos = Array.from(DOM.todoList.children).map(li => ({ text: li.querySelector('.todo-item-text').textContent, done: li.classList.contains('done') }));
-        localStorage.setItem('mokusData', JSON.stringify({ completedMissions, dogeCurrency, upgrades, activePlanet, todos, isDfMode }));
+        localStorage.setItem('mokusData', JSON.stringify({ accountCreated, completedMissions, dogeCurrency, upgrades, activePlanet, todos, isDfMode }));
     }
 
     function loadMokusData() {
@@ -816,15 +837,32 @@
         if (dataStr) {
             try {
                 const data = JSON.parse(dataStr);
+                accountCreated = data.accountCreated || new Date().getTime();
                 completedMissions = data.completedMissions || 0; dogeCurrency = data.dogeCurrency || 0;
                 if (data.upgrades) Object.keys(data.upgrades).forEach(k => { if(upgrades[k]) { upgrades[k].owned = data.upgrades[k].owned; upgrades[k].active = data.upgrades[k].active; }});
                 if (data.activePlanet) activePlanet = data.activePlanet;
                 if (data.todos && Array.isArray(data.todos)) { DOM.todoList.innerHTML = ''; data.todos.forEach(t => DOM.todoList.appendChild(createTodoItem(t.text, t.done))); }
                 if (data.isDfMode !== undefined) { isDfMode = data.isDfMode; document.body.classList.toggle('df-mode', isDfMode); if(DOM.btnDfToggle) DOM.btnDfToggle.textContent = isDfMode ? "NORMAL MODE" : "ZEN MODE"; }
-            } catch (e) { console.error("Save data parse error", e); }
+                
+                // Show personalized readout if data exists and user has done something
+                if (completedMissions > 0 || dogeCurrency > 0) {
+                    const daysActive = Math.max(1, Math.floor((new Date().getTime() - accountCreated) / (1000 * 60 * 60 * 24)));
+                    DOM.prAge.textContent = `${daysActive} Day(s)`;
+                    DOM.prMiss.textContent = completedMissions;
+                    DOM.prDoge.textContent = dogeCurrency.toLocaleString();
+                    DOM.profileReadout.style.display = 'block';
+                }
+            } catch (e) { console.error("Save data parse error", e); accountCreated = new Date().getTime(); }
+        } else {
+            accountCreated = new Date().getTime();
+            saveMokusData();
         }
         syncStoreUI();
     }
+
+    // Aggressive Persistence Handlers
+    window.addEventListener('beforeunload', saveMokusData);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveMokusData(); });
 
     function syncStoreUI() {
         Object.keys(upgrades).forEach(key => {
@@ -843,6 +881,9 @@
         });
         DOM.storeDogeBal.textContent = dogeCurrency.toLocaleString();
     }
+
+    // Execute Initial Load
+    loadMokusData();
 
     if (DOM.btnDfToggle) { DOM.btnDfToggle.addEventListener('click', () => { isDfMode = !isDfMode; document.body.classList.toggle('df-mode', isDfMode); DOM.btnDfToggle.textContent = isDfMode ? "NORMAL MODE" : "ZEN MODE"; saveMokusData(); }); }
     setInterval(() => DOM.realtimeClock.textContent = new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false}), 1000);
@@ -1191,13 +1232,13 @@
 
     DOM.btnResetTest.addEventListener('click', () => {
         if(confirm("CRITICAL WARNING: Are you sure you want to completely wipe all flight data and DOGE balance?")) {
+            accountCreated = new Date().getTime();
             completedMissions = 0; dogeCurrency = 0; Object.keys(upgrades).forEach(k => { upgrades[k].owned = false; upgrades[k].active = false; });
             activePlanet = 'earth'; DOM.todoList.innerHTML = ''; DOM.tSpeed.value = 1; DOM.tMissions.value = 0; DOM.tCurrency.value = 0; speedMult = 1;
-            saveMokusData(); syncMetaUI(); DOM.testModal.classList.remove('active'); logEvent("System wiped. All telemetry erased.", "error");
+            saveMokusData(); syncMetaUI(); DOM.testModal.classList.remove('active'); DOM.profileReadout.style.display = 'none'; logEvent("System wiped. All telemetry erased.", "error");
         }
     });
 
-    syncMetaUI();
 </script>
 </body>
 </html>
