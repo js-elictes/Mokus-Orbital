@@ -9,7 +9,7 @@
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;900&family=Inter:wght@300;400;600;800&display=swap');
 
     :root {
-        --bg-deep: #000000;
+        --bg-deep: #030303;
         --glass-border: rgba(255, 255, 255, 0.15);
         --text-main: #ffffff;
         --text-muted: #888888;
@@ -19,6 +19,14 @@
         --accent-gold: #ffd700;
         --accent-red: #ff3333;
         --hud-bg: rgba(5, 5, 5, 0.65);
+        
+        --tier-trash: #333333;
+        --tier-common: #888888;
+        --tier-rare: #0088ff;
+        --tier-epic: #9d00ff;
+        --tier-legendary: #ffd700;
+        --tier-mythic: #ff0055;
+        --tier-omega: #00ffcc;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -62,6 +70,14 @@
     }
     .shake-active { animation: sysShake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
 
+    @keyframes strobe { 
+        0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; }
+    }
+    .strobe-active::after {
+        content: ''; position: fixed; inset: 0; background: #fff; mix-blend-mode: overlay; pointer-events: none;
+        animation: strobe 0.1s infinite; z-index: 10000;
+    }
+
     body.flamethrower-active { cursor: crosshair; }
     .flame-overlay {
         position: absolute; bottom: 0; left: 0; width: 100%; height: 30vh;
@@ -77,136 +93,59 @@
         opacity: 0.4;
     }
 
-    .flight-visualizer {
-        position: absolute; inset: 0; width: 100%; height: 100%; 
-        background: #020202; z-index: 1; overflow: hidden; transition: background 0.5s;
-    }
-
+    .flight-visualizer { position: absolute; inset: 0; width: 100%; height: 100%; background: #020202; z-index: 1; overflow: hidden; transition: background 0.5s; }
     .stars {
-        position: absolute; inset: 0;
-        background-image: 
-            radial-gradient(1px 1px at 10% 10%, #fff 100%, transparent),
-            radial-gradient(1.5px 1.5px at 80% 20%, #848c9c 100%, transparent),
-            radial-gradient(2px 2px at 90% 90%, #ffffff 100%, transparent);
-        background-size: 250px 250px; animation: star-drift 200s linear infinite; opacity: 0.8;
+        position: absolute; inset: 0; background-image: radial-gradient(1px 1px at 10% 10%, #fff 100%, transparent), radial-gradient(1.5px 1.5px at 80% 20%, #848c9c 100%, transparent), radial-gradient(2px 2px at 90% 90%, #ffffff 100%, transparent); background-size: 250px 250px; animation: star-drift 200s linear infinite; opacity: 0.8;
     }
     .stars::after {
-        content: ''; position: absolute; inset: 0;
-        background-image: 
-            radial-gradient(1.5px 1.5px at 30% 40%, #fff 100%, transparent),
-            radial-gradient(2px 2px at 60% 70%, #848c9c 100%, transparent);
-        background-size: 350px 350px;
-        animation: star-drift 150s linear infinite, twinkle 3s ease-in-out infinite alternate;
+        content: ''; position: absolute; inset: 0; background-image: radial-gradient(1.5px 1.5px at 30% 40%, #fff 100%, transparent), radial-gradient(2px 2px at 60% 70%, #848c9c 100%, transparent); background-size: 350px 350px; animation: star-drift 150s linear infinite, twinkle 3s ease-in-out infinite alternate;
     }
     @keyframes star-drift { 0% { transform: translateY(0); } 100% { transform: translateY(250px); } }
     @keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; } }
 
-    .planet-glow {
-        position: absolute; bottom: -40vh; left: 50%; transform: translateX(-50%);
-        width: 150vw; height: 80vh; border-radius: 50%; transition: background 2s ease, box-shadow 2s ease;
-        z-index: 2;
-    }
-    .env-earth .planet-glow {
-        background: radial-gradient(circle at 50% 0%, #0a1128 0%, #050505 50%, #000 80%);
-        box-shadow: inset 0 20px 80px rgba(100,150,255,0.1), 0 -20px 120px rgba(100, 150, 255, 0.05);
-    }
-    .env-moon .planet-glow {
-        background: radial-gradient(circle at 50% 0%, #b0b0b0 0%, #444 50%, #000 80%);
-        box-shadow: inset 0 20px 80px rgba(255,255,255,0.1), 0 -20px 100px rgba(255, 255, 255, 0.1);
-    }
-    .env-mars .planet-glow {
-        background: radial-gradient(circle at 50% 0%, #ff4d00 0%, #501400 50%, #000 80%);
-        box-shadow: inset 0 20px 80px rgba(255,77,0,0.2), 0 -20px 120px rgba(255, 77, 0, 0.1);
-    }
+    .planet-glow { position: absolute; bottom: -40vh; left: 50%; transform: translateX(-50%); width: 150vw; height: 80vh; border-radius: 50%; transition: background 2s ease, box-shadow 2s ease; z-index: 2; }
+    .env-earth .planet-glow { background: radial-gradient(circle at 50% 0%, #0a1128 0%, #050505 50%, #000 80%); box-shadow: inset 0 20px 80px rgba(100,150,255,0.1), 0 -20px 120px rgba(100, 150, 255, 0.05); }
+    .env-moon .planet-glow { background: radial-gradient(circle at 50% 0%, #b0b0b0 0%, #444 50%, #000 80%); box-shadow: inset 0 20px 80px rgba(255,255,255,0.1), 0 -20px 100px rgba(255, 255, 255, 0.1); }
+    .env-mars .planet-glow { background: radial-gradient(circle at 50% 0%, #ff4d00 0%, #501400 50%, #000 80%); box-shadow: inset 0 20px 80px rgba(255,77,0,0.2), 0 -20px 120px rgba(255, 77, 0, 0.1); }
 
     .master-svg { position: relative; z-index: 5; width: 100%; height: 100%; display: block; }
-    
     .traj-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 2; stroke-dasharray: 4 12; }
     .traj-active { fill: none; stroke: var(--accent-main); stroke-width: 4; stroke-linecap: butt; filter: drop-shadow(0 0 10px rgba(255,255,255,0.8)); transition: stroke 0.5s ease; }
     .env-mars .traj-active { stroke: var(--accent-orange); filter: drop-shadow(0 0 15px rgba(255,77,0,0.8)); }
-
     .starlink-sat { fill: #fff; filter: drop-shadow(0 0 4px #fff); opacity: 0.8; }
-
-    .plume { fill: url(#plume-grad); opacity: 0; filter: brightness(1.2); transition: opacity 0.05s; transform-origin: top center; }
+    .plume { fill: url(#plume-grad); opacity: 0; filter: brightness(1.2); transition: opacity 0.05s, fill 0.3s; transform-origin: top center; }
+    body.hyper-plume-active .plume { fill: url(#hyper-plume-grad); filter: brightness(1.5) drop-shadow(0 0 20px rgba(157,0,255,0.8)); }
     .active-burn .plume { opacity: 1; animation: plumeFlicker 0.05s infinite alternate; }
     @keyframes plumeFlicker { 0% { opacity: 0.7; filter: brightness(1); } 100% { opacity: 1; filter: brightness(1.5); } }
-    
     .plasma { fill: url(#plasma-grad); opacity: 0; filter: blur(5px); transition: opacity 0.5s; }
     .reentry .plasma { opacity: 0.9; }
-    
     .water-deluge { fill: #ddd; opacity: 0; filter: blur(15px); }
     .smoke-cloud { fill: url(#smoke-grad); opacity: 0; filter: blur(15px); }
     .launching .smoke-cloud { animation: smokeExpand 12s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
     .launching .water-deluge { animation: waterExpand 8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
-
     @keyframes smokeExpand { 0% { transform: scale(0.5); opacity: 0; } 10% { opacity: 1; } 100% { transform: scale(18) translateY(-100px) translateX(var(--drift)); opacity: 0; } }
     @keyframes waterExpand { 0% { transform: scale(0.5); opacity: 0; } 10% { opacity: 0.6; } 100% { transform: scale(10) scaleY(4); opacity: 0; } }
-
     .explosion-layer { opacity: 0; pointer-events: none; }
     .exploded .explosion-layer { animation: explodeAnim 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
-    @keyframes explodeAnim {
-        0% { opacity: 1; transform: scale(0.1); filter: brightness(3); }
-        10% { opacity: 1; transform: scale(3); filter: brightness(1.5); }
-        100% { opacity: 0; transform: scale(6); filter: brightness(0.5); }
-    }
+    @keyframes explodeAnim { 0% { opacity: 1; transform: scale(0.1); filter: brightness(3); } 10% { opacity: 1; transform: scale(3); filter: brightness(1.5); } 100% { opacity: 0; transform: scale(6); filter: brightness(0.5); } }
 
-    .big-launch-wrapper {
-        position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%); z-index: 50;
-        transition: opacity 0.3s, transform 0.3s; pointer-events: auto;
-        filter: drop-shadow(0 15px 30px rgba(0,0,0,0.8));
-    }
+    .big-launch-wrapper { position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%); z-index: 50; transition: opacity 0.3s, transform 0.3s; pointer-events: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.8)); }
     .big-launch-wrapper.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(20px); }
-    
-    .big-launch-btn {
-        background: rgba(10, 10, 10, 0.3);
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        color: var(--accent-main); font-family: 'JetBrains Mono'; font-size: 2.2rem; font-weight: 900;
-        padding: 20px 90px; cursor: pointer; border: none; position: relative;
-        text-transform: uppercase; letter-spacing: 0.15em; 
-        -webkit-clip-path: polygon(25px 0, 100% 0, calc(100% - 25px) 100%, 0 100%);
-        clip-path: polygon(25px 0, 100% 0, calc(100% - 25px) 100%, 0 100%);
-        transition: all 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-    }
-    .big-launch-btn::before {
-        content: ''; position: absolute; inset: 0; z-index: -2;
-        background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 40%, rgba(255,255,255,0.1) 100%);
-    }
-    .big-launch-btn::after {
-        content: ''; position: absolute; inset: 1px; z-index: -1;
-        background: rgba(5, 5, 5, 0.7); 
-        -webkit-clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
-        clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
-        transition: background 0.3s ease;
-    }
+    .big-launch-btn { background: rgba(10, 10, 10, 0.3); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: var(--accent-main); font-family: 'JetBrains Mono'; font-size: 2.2rem; font-weight: 900; padding: 20px 90px; cursor: pointer; border: none; position: relative; text-transform: uppercase; letter-spacing: 0.15em; -webkit-clip-path: polygon(25px 0, 100% 0, calc(100% - 25px) 100%, 0 100%); clip-path: polygon(25px 0, 100% 0, calc(100% - 25px) 100%, 0 100%); transition: all 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+    .big-launch-btn::before { content: ''; position: absolute; inset: 0; z-index: -2; background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 40%, rgba(255,255,255,0.1) 100%); }
+    .big-launch-btn::after { content: ''; position: absolute; inset: 1px; z-index: -1; background: rgba(5, 5, 5, 0.7); -webkit-clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%); clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%); transition: background 0.3s ease; }
     .big-launch-btn:hover { transform: scale(1.02); }
     .big-launch-btn:hover::after { background: rgba(30, 30, 30, 0.6); }
 
-    .top-hud {
-        position: absolute; top: 0; left: 0; width: 100%; z-index: 20;
-        display: grid; grid-template-columns: 1fr auto 1fr; align-items: start;
-        padding: 20px 40px; pointer-events: none; gap: 20px; transition: all 0.4s ease;
-    }
-
-    .todo-panel {
-        pointer-events: auto; background: var(--hud-bg); 
-        border: 1px solid var(--glass-border); border-radius: 4px; padding: 15px; 
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-        width: 320px; border-left: 4px solid var(--accent-main);
-        transition: all 0.4s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .todo-header-row {
-        display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-    }
+    .top-hud { position: absolute; top: 0; left: 0; width: 100%; z-index: 20; display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; padding: 20px 40px; pointer-events: none; gap: 20px; transition: all 0.4s ease; }
+    .todo-panel { pointer-events: auto; background: var(--hud-bg); border: 1px solid var(--glass-border); border-radius: 4px; padding: 15px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); width: 320px; border-left: 4px solid var(--accent-main); transition: all 0.4s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .todo-header-row { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
     .todo-header { font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 900; letter-spacing: 0.1em; }
     .todo-chevron { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.3s; }
     .todo-content { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; overflow: hidden; transition: max-height 0.3s ease; max-height: 200px; }
     .todo-content.collapsed { max-height: 0; margin-top: 0; }
     .todo-content.collapsed + .todo-header-row .todo-chevron { transform: rotate(-90deg); }
-
-    .todo-input { 
-        background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); 
-        color: #fff; font-family: 'Inter'; font-size: 0.9rem; padding: 5px 0; outline: none; width: 100%; transition: border-color 0.3s;
-    }
+    .todo-input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); color: #fff; font-family: 'Inter'; font-size: 0.9rem; padding: 5px 0; outline: none; width: 100%; transition: border-color 0.3s; }
     .todo-input:focus { border-bottom-color: var(--accent-main); }
     .todo-list { list-style: none; display: flex; flex-direction: column; gap: 5px; max-height: 120px; overflow-y: auto; padding-right: 5px; }
     .todo-list::-webkit-scrollbar { width: 4px; }
@@ -221,55 +160,22 @@
     .todo-item:hover .todo-delete { opacity: 1; }
     .todo-delete:hover { color: var(--accent-red); }
 
-    .top-element-standard {
-        height: 42px; display: flex; align-items: center; justify-content: center; box-sizing: border-box;
-    }
-
+    .top-element-standard { height: 42px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
     .realtime-clock-wrapper { pointer-events: auto; transition: all 0.4s ease; display: flex; align-items: center; gap: 10px; }
     .favicon-hud { height: 28px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.4)); transition: all 0.3s; }
-    .realtime-clock {
-        font-family: 'JetBrains Mono'; font-size: 1.2rem; font-weight: 400; color: #fff;
-        background: var(--hud-bg); padding: 0 25px; border-radius: 4px; border: 1px solid var(--glass-border);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); text-shadow: 0 0 10px rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s ease;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5); letter-spacing: 0.05em;
-    }
+    .realtime-clock { font-family: 'JetBrains Mono'; font-size: 1.2rem; font-weight: 400; color: #fff; background: var(--hud-bg); padding: 0 25px; border-radius: 4px; border: 1px solid var(--glass-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); text-shadow: 0 0 10px rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.5); letter-spacing: 0.05em; }
     .realtime-clock:hover { color: var(--accent-gold); border-color: var(--accent-gold); box-shadow: 0 0 20px rgba(255,215,0,0.2); }
-
     .top-right-group { display: flex; gap: 15px; align-items: flex-start; justify-content: flex-end; pointer-events: auto; transition: all 0.4s ease; }
-    
-    .btn-df-toggle {
-        background: var(--hud-bg); border: 1px solid var(--glass-border); color: var(--text-muted);
-        padding: 0 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    }
+    .btn-df-toggle { background: var(--hud-bg); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
     .btn-df-toggle:hover { color: #fff; border-color: #fff; }
-
-    .destination-badge {
-        background: var(--hud-bg); border: 1px solid var(--glass-border); padding: 0 20px;
-        border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; text-transform: uppercase; font-weight: 900;
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-
-    .wallet-badge {
-        background: rgba(255, 215, 0, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold);
-        padding: 0 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 1rem; font-weight: 900;
-        gap: 8px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .wallet-badge:hover { background: var(--accent-gold); color: #000; box-shadow: 0 0 25px rgba(255,215,0,0.5); }
+    .destination-badge { background: var(--hud-bg); border: 1px solid var(--glass-border); padding: 0 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.8rem; text-transform: uppercase; font-weight: 900; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .wallet-badge { background: rgba(255, 215, 0, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 0 20px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 1rem; font-weight: 900; gap: 8px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+    .wallet-badge:hover { background: var(--accent-gold); color: #000; box-shadow: 0 0 30px rgba(255,215,0,0.6); transform: scale(1.05); }
     .wallet-badge span:first-child { font-size: 1.2rem; } 
 
-    .lower-hud {
-        position: absolute; bottom: 15px; left: 0; width: 100%; height: 110px; z-index: 20;
-        display: flex; justify-content: space-between; padding: 0 30px; gap: 15px; pointer-events: none; 
-        transition: opacity 0.5s, filter 0.5s, transform 0.4s ease; opacity: 0.4; filter: grayscale(80%);
-    }
+    .lower-hud { position: absolute; bottom: 15px; left: 0; width: 100%; height: 110px; z-index: 20; display: flex; justify-content: space-between; padding: 0 30px; gap: 15px; pointer-events: none; transition: opacity 0.5s, filter 0.5s, transform 0.4s ease; opacity: 0.4; filter: grayscale(80%); }
     .lower-hud.active { opacity: 1; filter: grayscale(0%); pointer-events: auto; }
-    
-    .hud-panel {
-        background: var(--hud-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
-        border-top: 2px solid var(--accent-main); pointer-events: auto; display: flex; align-items: center;
-        transition: all 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
+    .hud-panel { background: var(--hud-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-top: 2px solid var(--accent-main); pointer-events: auto; display: flex; align-items: center; transition: all 0.4s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .hud-left { -webkit-clip-path: polygon(0 0, 93% 0, 100% 100%, 0 100%); clip-path: polygon(0 0, 93% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 30px 10px 20px; justify-content: space-around;}
     .hud-center { -webkit-clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%); clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%); flex: 1.5; padding: 10px; justify-content: center; gap: 40px;}
     .hud-right { -webkit-clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%); clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%); flex: 1; padding: 10px 20px 10px 30px; display: flex; flex-direction: column;}
@@ -283,6 +189,7 @@
     .engine-viz { width: 60px; height: 60px; display: block;}
     .eng-nozzle { fill: #111; stroke: #333; stroke-width: 0.5; transition: all 0.1s; }
     .eng-nozzle.hud-burning { fill: #ffb700; stroke: var(--accent-orange); filter: drop-shadow(0 0 3px var(--accent-orange)); }
+    body.hyper-plume-active .eng-nozzle.hud-burning { fill: #c55eff; stroke: var(--tier-epic); filter: drop-shadow(0 0 5px var(--tier-epic)); }
 
     .center-hud-main { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 300px; transition: all 0.4s ease;}
     .hud-phase { font-family: 'JetBrains Mono'; font-size: 0.9rem; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 900; margin-bottom: -2px; color: var(--accent-main);}
@@ -290,21 +197,10 @@
     
     .progress-bar-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-top: 8px; position: relative;}
     .progress-bar { height: 100%; background: var(--accent-main); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px var(--accent-main); }
-
-    .btn-scrub {
-        width: 100%; background: rgba(255,0,0,0.1); border: 1px solid var(--accent-red); border-radius: 4px;
-        padding: 8px 0; color: var(--accent-red); font-family: 'JetBrains Mono'; font-size: 1rem;
-        text-transform: uppercase; font-weight: 900; cursor: pointer; transition: all 0.2s; margin-bottom: 5px;
-    }
+    .btn-scrub { width: 100%; background: rgba(255,0,0,0.1); border: 1px solid var(--accent-red); border-radius: 4px; padding: 8px 0; color: var(--accent-red); font-family: 'JetBrains Mono'; font-size: 1rem; text-transform: uppercase; font-weight: 900; cursor: pointer; transition: all 0.2s; margin-bottom: 5px; }
     .btn-scrub:hover { background: var(--accent-red); color: #fff; box-shadow: 0 0 15px rgba(255, 50, 50, 0.5); }
-    
     .df-scrub { display: none; margin-top: 20px; }
-
-    .com-log {
-        background: transparent; border: none; padding: 0; flex: 1; width: 100%;
-        overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-family: 'JetBrains Mono'; font-size: 0.65rem; color: #aaa; 
-        scrollbar-width: none; -ms-overflow-style: none;
-    }
+    .com-log { background: transparent; border: none; padding: 0; flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-family: 'JetBrains Mono'; font-size: 0.65rem; color: #aaa; scrollbar-width: none; -ms-overflow-style: none; }
     .com-log::-webkit-scrollbar { display: none; }
     .log-entry { display: flex; gap: 8px; line-height: 1.3; animation: fadeIn 0.3s ease forwards; opacity: 0; }
     @keyframes fadeIn { to { opacity: 1; } }
@@ -312,90 +208,121 @@
     .log-quote { color: var(--accent-gold); font-style: italic; }
     .log-loot { color: var(--accent-green); font-weight: bold; }
 
-    .modal-overlay {
-        position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
-        display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    }
+    /* Epic/Prime Store UI */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal-content {
-        width: 750px; max-height: 90vh; overflow-y: auto; background: #050505; border: 1px solid #222;
-        padding: 35px 30px 30px; border-radius: 4px; display: flex; flex-direction: column; gap: 15px; position: relative;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.9);
-    }
-    .modal-content::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--glass-border); }
     
-    .store-close-top {
-        position: absolute; top: 12px; right: 15px; background: transparent; border: none;
-        color: var(--text-muted); font-size: 1.8rem; cursor: pointer; transition: color 0.2s; line-height: 1;
-    }
-    .store-close-top:hover { color: var(--accent-red); }
+    .epic-store-container { width: 95vw; height: 95vh; background: #0a0a0c; border: 1px solid #222; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 100px rgba(0,0,0,1); position: relative; }
+    .store-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: rgba(10, 10, 12, 0.9); border-bottom: 1px solid #222; z-index: 10; }
+    .store-header h2 { font-family: 'JetBrains Mono'; font-size: 1.5rem; letter-spacing: 0.1em; font-weight: 900; }
+    .store-bal { font-family: 'JetBrains Mono'; font-size: 1.2rem; color: var(--accent-gold); font-weight: 900; }
+    .btn-close-store { background: transparent; border: none; color: #888; font-size: 2rem; cursor: pointer; transition: 0.2s; line-height: 1; }
+    .btn-close-store:hover { color: var(--accent-red); transform: scale(1.1); }
 
-    .gigastore { border-top-color: var(--accent-gold); box-shadow: 0 10px 50px rgba(255,215,0,0.05); }
-    .gigastore::before { background: var(--accent-gold); }
+    .store-scroll-area { flex: 1; overflow-y: auto; padding-bottom: 60px; scrollbar-width: thin; scrollbar-color: #444 #111; }
+    .store-scroll-area::-webkit-scrollbar { width: 8px; }
+    .store-scroll-area::-webkit-scrollbar-track { background: #111; }
+    .store-scroll-area::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 
-    .modal-title { color: #fff; font-family: 'JetBrains Mono'; font-size: 1.2rem; text-transform: uppercase; font-weight: 900;}
+    .hero-banner { position: relative; height: 350px; background: linear-gradient(90deg, #050505 0%, transparent 60%, transparent 100%), radial-gradient(circle at 80% 50%, rgba(157, 0, 255, 0.2) 0%, transparent 60%), #0a0a0c; display: flex; flex-direction: column; justify-content: center; padding: 0 50px; border-bottom: 1px solid #222; overflow: hidden; }
+    .hero-banner::after { content: ''; position: absolute; right: -5%; top: -20%; width: 50%; height: 140%; background: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 10px); transform: rotate(-10deg); pointer-events: none;}
+    .hero-title { font-family: 'JetBrains Mono'; font-size: 3rem; font-weight: 900; line-height: 1.1; margin-bottom: 10px; color: #fff; text-shadow: 0 0 30px rgba(255,255,255,0.3);}
+    .hero-subtitle { font-family: 'Inter'; font-size: 1.1rem; color: #aaa; margin-bottom: 30px; max-width: 500px; }
     
-    .lootbox-title { border-top-color: var(--accent-gold); box-shadow: 0 0 80px rgba(255, 215, 0, 0.1); text-align: center; width: 500px;}
-    .lootbox-title .modal-title { color: var(--accent-gold); }
-    .lootbox-quote { font-size: 1rem; font-style: italic; line-height: 1.5; margin: 15px 0; color: #fff; font-family: 'Inter'; }
-    .lootbox-rewards { font-family: 'JetBrains Mono'; font-size: 1.2rem; color: var(--accent-green); font-weight: 900; margin-bottom: 15px;}
-    .slot-machine { font-size: 2.5rem; letter-spacing: 0.2em; font-family: 'JetBrains Mono'; margin: 20px 0; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.4);}
+    .gacha-btn-group { display: flex; gap: 20px; z-index: 2; flex-wrap: wrap; }
+    .btn-gacha { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 15px 40px; font-family: 'JetBrains Mono'; font-size: 1.2rem; font-weight: 900; cursor: pointer; transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); border-radius: 4px; backdrop-filter: blur(10px); text-transform: uppercase; }
+    .btn-gacha:hover { background: var(--accent-gold); color: #000; box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); transform: translateY(-2px) scale(1.02); }
+    .btn-gacha.ten-pull { background: rgba(157, 0, 255, 0.1); border-color: var(--tier-epic); color: var(--tier-epic); }
+    .btn-gacha.ten-pull:hover { background: var(--tier-epic); color: #fff; box-shadow: 0 0 30px rgba(157, 0, 255, 0.6); }
+    .btn-gacha.degen-pull { background: rgba(255, 0, 85, 0.1); border-color: var(--tier-mythic); color: var(--tier-mythic); text-shadow: 0 0 10px rgba(255,0,85,0.5); animation: pulseRed 2s infinite; }
+    .btn-gacha.degen-pull:hover { background: var(--tier-mythic); color: #fff; box-shadow: 0 0 50px rgba(255,0,85,0.8); animation: none; }
+    @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(255,0,85,0.4); } 70% { box-shadow: 0 0 0 15px rgba(255,0,85,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,85,0); } }
 
+    /* Ads Section */
+    .store-ad-banner { margin: 20px 50px; padding: 30px; background: repeating-linear-gradient(45deg, #111 0, #111 10px, #1a1a1a 10px, #1a1a1a 20px); border: 1px solid #333; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
+    .store-ad-banner::before { content: 'SPONSORED'; position: absolute; top: 0; left: 0; background: var(--accent-gold); color: #000; font-family: 'JetBrains Mono'; font-size: 0.6rem; padding: 2px 8px; font-weight: bold; border-bottom-right-radius: 4px; }
+    .ad-text-wrapper h3 { font-family: 'JetBrains Mono'; font-size: 1.5rem; color: #fff; margin-bottom: 5px; text-transform: uppercase; font-weight: 900;}
+    .ad-text-wrapper p { font-family: 'Inter'; color: #aaa; font-size: 0.9rem;}
+    .btn-ad { background: transparent; border: 2px solid var(--accent-main); color: var(--accent-main); padding: 10px 25px; font-family: 'JetBrains Mono'; font-weight: bold; cursor: pointer; transition: 0.2s;}
+    .btn-ad:hover { background: var(--accent-main); color: #000; }
+
+    .carousel-section { margin-top: 30px; }
+    .carousel-title { font-family: 'JetBrains Mono'; font-size: 1.2rem; margin: 0 50px 20px; font-weight: 900; letter-spacing: 0.05em; border-left: 3px solid var(--accent-main); padding-left: 15px; }
+    
+    /* Strict CSS Grid for Absolute Alignment */
+    .carousel-track { display: grid; grid-auto-flow: column; grid-auto-columns: 320px; gap: 20px; padding: 10px 50px 30px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -ms-overflow-style: none; }
+    .carousel-track::-webkit-scrollbar { display: none; }
+    
+    .card { background: #111; border: 1px solid #333; border-radius: 6px; padding: 25px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); position: relative; overflow: hidden; height: 100%; min-height: 220px; }
+    .card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%); pointer-events: none; }
+    .card:hover { transform: translateY(-5px); border-color: #666; box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 5; background: #151515;}
+    
+    .card-tier-legendary:hover { border-color: var(--tier-legendary); box-shadow: 0 15px 40px rgba(255,215,0,0.15); }
+    .card-tier-epic:hover { border-color: var(--tier-epic); box-shadow: 0 15px 40px rgba(157,0,255,0.15); }
+    .card-tier-mythic:hover { border-color: var(--tier-mythic); box-shadow: 0 15px 40px rgba(255,0,85,0.15); }
+
+    .card h3 { font-family: 'JetBrains Mono'; font-size: 1.1rem; font-weight: 900; margin-bottom: 8px; color: #fff; line-height: 1.2;}
+    .card p { font-family: 'Inter'; font-size: 0.85rem; color: #aaa; margin-bottom: 25px; line-height: 1.4; flex-grow: 1; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto;}
+    .card-price { font-family: 'JetBrains Mono'; color: var(--accent-gold); font-weight: 900; }
+    
+    .btn-buy-card { background: transparent; color: #fff; border: 1px solid #555; padding: 10px 20px; font-family: 'JetBrains Mono'; font-weight: 900; font-size: 0.8rem; border-radius: 4px; cursor: pointer; transition: 0.2s; white-space: nowrap;}
+    .btn-buy-card:hover { background: #fff; color: #000; border-color: #fff; }
+    
+    .card.owned { border-color: #444; }
+    .card.owned.is-active-toggle { border-color: var(--accent-green); box-shadow: 0 0 20px rgba(0, 255, 102, 0.1); }
+    .card.owned .btn-buy-card { background: #222; border-color: #444; color: #fff; }
+    .card.owned.is-active-toggle .btn-buy-card { background: var(--accent-green); border-color: var(--accent-green); color: #000; }
+    .card.owned .btn-buy-card:hover { filter: brightness(1.2); }
+
+    .gacha-exclusive-tag { font-family: 'JetBrains Mono'; font-size: 0.7rem; color: #888; font-weight: bold; letter-spacing: 0.05em;}
+
+    /* Gacha Pull Sequence Overlay */
+    .gacha-reveal-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; flex-direction: column; perspective: 1000px; overflow: hidden;}
+    .gacha-reveal-overlay.active { opacity: 1; pointer-events: auto; }
+    
+    /* Particles */
+    #particleContainer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1;}
+    .gacha-particle { position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0; animation: particleShoot 1s ease-out forwards; }
+    @keyframes particleShoot { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+
+    .gacha-pod { width: 100px; height: 100px; background: #222; border: 2px solid #555; transform: rotate(45deg); box-shadow: 0 0 50px rgba(255,255,255,0.1); transition: all 0.1s; z-index: 5;}
+    .gacha-pod.shaking { animation: podShake 0.1s infinite; }
+    @keyframes podShake { 0% { transform: rotate(45deg) translate(5px, 5px); } 50% { transform: rotate(45deg) translate(-5px, -5px); } 100% { transform: rotate(45deg) translate(5px, -5px); } }
+    
+    .gacha-result-card { width: 450px; background: #111; border-radius: 10px; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; opacity: 0; transform: scale(0.8) rotateY(90deg); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; z-index: 10;}
+    .gacha-result-card.revealed { opacity: 1; transform: scale(1) rotateY(0deg); display: flex; }
+    
+    .res-tier { font-family: 'JetBrains Mono'; font-size: 1rem; letter-spacing: 0.3em; margin-bottom: 20px; text-transform: uppercase; font-weight: 900;}
+    .res-title { font-family: 'JetBrains Mono'; font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 15px;}
+    .res-desc { font-family: 'Inter'; font-size: 1rem; color: #aaa; margin-bottom: 30px; font-style: italic;}
+    .res-value { font-family: 'JetBrains Mono'; font-size: 2.5rem; font-weight: 900;}
+
+    .btn-gacha-continue { margin-top: 40px; background: transparent; border: 1px solid #fff; color: #fff; padding: 12px 40px; font-family: 'JetBrains Mono'; font-weight: 900; cursor: pointer; transition: 0.2s;}
+    .btn-gacha-continue:hover { background: #fff; color: #000; }
+
+    /* Forms */
     .test-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .test-form label { font-family: 'JetBrains Mono'; font-size: 0.6rem; color: #fff; text-transform: uppercase; font-weight: bold;}
     .test-form input { background: #111; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 4px; font-family: 'JetBrains Mono'; width: 100%; font-size: 1rem; transition: border-color 0.2s;}
     .test-form input:focus { border-color: var(--accent-main); outline: none; }
-
-    .store-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .store-item { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; background: #0a0a0a; padding: 15px; border: 1px solid #222; transition: all 0.2s; border-radius: 4px;}
-    .store-item:hover { border-color: var(--accent-gold); background: #111; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.6);}
-    .store-item h3 { font-family: 'JetBrains Mono'; font-size: 0.9rem; color: #fff; }
-    .store-item p { font-family: 'Inter'; font-size: 0.75rem; color: #aaa; margin-bottom: 5px;}
-    .buy-btn { background: transparent; color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 8px 12px; font-family: 'JetBrains Mono'; cursor: pointer; transition: 0.2s; font-weight: 900; font-size: 0.75rem; border-radius: 2px;}
-    .buy-btn:hover { background: var(--accent-gold); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.4);}
-    
     .close-btn { background: #222; color: #fff; border: 1px solid #444; padding: 12px; font-family: 'JetBrains Mono'; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; transition: all 0.2s; border-radius: 2px;}
     .close-btn:hover { background: #fff; color: #000; }
+    .modal-content { width: 450px; background: #050505; border: 1px solid #222; padding: 35px 30px 30px; border-radius: 4px; display: flex; flex-direction: column; gap: 15px; }
+    .modal-title { color: #fff; font-family: 'JetBrains Mono'; font-size: 1.2rem; text-transform: uppercase; font-weight: 900;}
 
     .locked-item { display: none; }
-
-    .config-label {
-        font-family: 'JetBrains Mono';
-        font-size: 0.5rem;
-        letter-spacing: 0.05em;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        font-weight: 700;
-    }
+    .config-label { font-family: 'JetBrains Mono'; font-size: 0.5rem; letter-spacing: 0.05em; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
 
     body.df-mode .flight-visualizer { background: #000; }
     body.df-mode .app-container::before { display: none !important; }
-    body.df-mode .stars, 
-    body.df-mode .planet-glow,
-    body.df-mode .master-svg { display: none !important; }
-    
-    body.df-mode .top-hud .todo-panel,
-    body.df-mode .top-hud .destination-badge,
-    body.df-mode .top-hud .wallet-badge,
-    body.df-mode .top-hud .realtime-clock-wrapper,
-    body.df-mode .hud-left, 
-    body.df-mode .hud-right, 
-    body.df-mode .engine-display-group,
-    body.df-mode .flame-overlay { display: none !important; }
-
+    body.df-mode .stars, body.df-mode .planet-glow, body.df-mode .master-svg { display: none !important; }
+    body.df-mode .top-hud .todo-panel, body.df-mode .top-hud .destination-badge, body.df-mode .top-hud .wallet-badge, body.df-mode .top-hud .realtime-clock-wrapper, body.df-mode .hud-left, body.df-mode .hud-right, body.df-mode .engine-display-group, body.df-mode .flame-overlay { display: none !important; }
     body.df-mode .top-right-group { position: absolute; top: 15px; right: 15px; }
     body.df-mode .btn-df-toggle { opacity: 0.3; border-color: transparent; }
     body.df-mode .btn-df-toggle:hover { opacity: 1; border-color: #fff; }
-
-    body.df-mode .lower-hud {
-        bottom: auto; top: 50%; transform: translateY(-50%); justify-content: center; 
-        opacity: 1 !important; filter: none !important; pointer-events: none; height: auto;
-    }
-    body.df-mode .hud-center { 
-        clip-path: none; -webkit-clip-path: none; background: transparent; border: none; flex: unset; width: 100%; 
-        align-items: center; padding: 0; pointer-events: auto; box-shadow: none;
-    }
+    body.df-mode .lower-hud { bottom: auto; top: 50%; transform: translateY(-50%); justify-content: center; opacity: 1 !important; filter: none !important; pointer-events: none; height: auto; }
+    body.df-mode .hud-center { clip-path: none; -webkit-clip-path: none; background: transparent; border: none; flex: unset; width: 100%; align-items: center; padding: 0; pointer-events: auto; box-shadow: none; }
     body.df-mode .time { font-size: 8rem; text-shadow: 0 0 40px rgba(255,255,255,0.2); }
     body.df-mode .big-launch-wrapper { bottom: 15%; pointer-events: auto; }
     body.df-mode .df-scrub { display: block; width: 250px; margin-top: 25px; }
@@ -435,6 +362,12 @@
                     <stop offset="60%" stop-color="#ff4d00" />
                     <stop offset="100%" stop-color="transparent" />
                 </linearGradient>
+                <linearGradient id="hyper-plume-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ffffff" />
+                    <stop offset="20%" stop-color="#00ffcc" />
+                    <stop offset="60%" stop-color="#9d00ff" />
+                    <stop offset="100%" stop-color="transparent" />
+                </linearGradient>
                 <radialGradient id="smoke-grad" cx="50%" cy="50%" r="50%">
                     <stop offset="0%" stop-color="#fff" stop-opacity="0.9" />
                     <stop offset="100%" stop-color="#111" stop-opacity="0" />
@@ -449,10 +382,9 @@
                     <rect width="12" height="12" fill="none" stroke="#333" stroke-width="1"/>
                 </pattern>
             </defs>
-
             <path class="traj-bg" id="trajBg" d="M 300 720 C 300 200, 700 100, 1400 100" />
             <path id="returnPath" d="M 1400 100 C 1800 -150, 800 -250, 300 720" fill="none" stroke="none" />
-
+            
             <g id="orbitalLayer">
                 <g id="stationUnlock" class="locked-item">
                     <rect x="-40" y="-2" width="80" height="4" fill="#aaa" /> 
@@ -472,14 +404,6 @@
                         <path d="M 0,0 Q -10,10 -20,5" stroke="#555" stroke-width="0.5" fill="none"/>
                         <path d="M -3,2 L 3,2 L 4,8 L 1,8 L 1,5 L -1,5 L -1,8 L -4,8 Z" fill="#eee"/>
                         <path d="M -3,2 L -6,6 M 3,2 L 6,4" stroke="#eee" stroke-width="1.5" stroke-linecap="round"/>
-                        <circle cx="0" cy="-1" r="2.5" fill="#fff"/>
-                        <path d="M -1.5,-1.5 Q 0,-3 1.5,-1.5 Q 1.5,0 0,0.5 Q -1.5,0 -1.5,-1.5 Z" fill="#111"/>
-                        <rect x="-2" y="0" width="4" height="4" fill="#ccc"/>
-                    </g>
-                    <g transform="translate(15, -5) rotate(-20) scale(0.5)">
-                        <path d="M 0,0 Q -15,-5 -25,10" stroke="#555" stroke-width="0.5" fill="none"/>
-                        <path d="M -3,2 L 3,2 L 4,8 L 1,8 L 1,5 L -1,5 L -1,8 L -4,8 Z" fill="#eee"/>
-                        <path d="M -3,2 L -5,0 M 3,2 L 5,5" stroke="#eee" stroke-width="1.5" stroke-linecap="round"/>
                         <circle cx="0" cy="-1" r="2.5" fill="#fff"/>
                         <path d="M -1.5,-1.5 Q 0,-3 1.5,-1.5 Q 1.5,0 0,0.5 Q -1.5,0 -1.5,-1.5 Z" fill="#111"/>
                         <rect x="-2" y="0" width="4" height="4" fill="#ccc"/>
@@ -509,22 +433,17 @@
                 </g>
                 <path d="M -140 -20 L -20 -20 L -20 -100 L 0 -100" fill="none" stroke="#666" stroke-width="3"/>
                 <path d="M -85 -10 L -10 -10 L -10 -120 L 0 -120" fill="none" stroke="#444" stroke-width="2"/>
-
                 <rect x="-40" y="-10" width="120" height="20" fill="#111" rx="4"/> 
                 <rect x="0" y="-700" width="35" height="700" fill="#050505"/> 
                 <rect x="0" y="-700" width="35" height="700" fill="url(#truss)"/> 
                 <rect x="0" y="-700" width="35" height="700" fill="none" stroke="#333" stroke-width="2"/>
-                
                 <rect x="16" y="-740" width="3" height="40" fill="#666"/>
                 <circle cx="17.5" cy="-740" r="2" fill="var(--accent-red)"/>
-
                 <path d="M -5 -600 L 40 -600 M -5 -450 L 40 -450 M -5 -300 L 40 -300 M -5 -150 L 40 -150" stroke="#222" stroke-width="4"/>
-
                 <g transform="translate(35, -550)">
                     <path d="M 0 0 L 40 -10 L 40 10 Z" fill="#222"/>
                     <rect x="35" y="-15" width="5" height="30" fill="#444"/>
                 </g>
-
                 <g transform="translate(35, -420)" id="chopsticks-group">
                     <rect x="-5" y="-40" width="10" height="80" fill="#111"/>
                     <rect x="-2" y="-20" width="18" height="40" fill="#222" rx="2" stroke="#555"/>
@@ -555,7 +474,6 @@
                     <polygon points="-10,60 -16,75 -14,80 -10,75" fill="url(#steel)" />
                     <polygon points="10,60 16,75 14,80 10,75" fill="#111" />
                     <rect x="-7" y="80" width="14" height="3" fill="#222" />
-                    
                     <path class="plume" d="M -5 83 L 5 83 L 2 130 L -2 130 Z" />
                     <g class="explosion-layer" transform="translate(0, 40)">
                         <circle cx="0" cy="0" r="30" fill="#fff"/>
@@ -642,73 +560,154 @@
         </div>
     </footer>
 
+    <!-- EPIC/PRIME STYLE STORE -->
     <div class="modal-overlay" id="storeModal">
-        <div class="modal-content gigastore">
-            <button class="store-close-top" id="btnCloseStore">×</button>
-            <div class="modal-title">Giga-Store Upgrades</div>
-            <div class="store-grid">
-                <div class="store-item">
-                    <div>
-                        <h3>Tier I: Meme Data (10 Ð)</h3>
-                        <p>Standard orbital wisdom extraction.</p>
-                    </div>
-                    <button class="buy-btn" onclick="triggerCasino(10)">DECODE</button>
+        <div class="epic-store-container">
+            <header class="store-header">
+                <h2>GIGA-STORE</h2>
+                <div style="display: flex; align-items: center; gap: 30px;">
+                    <div class="store-bal">Ð <span id="storeDogeBal">0</span></div>
+                    <button class="btn-close-store" id="btnCloseStore">×</button>
                 </div>
-                <div class="store-item">
-                    <div>
-                        <h3>Tier II: FSD Beta (50 Ð)</h3>
-                        <p>High variance telemetry parsing.</p>
+            </header>
+            
+            <div class="store-scroll-area">
+                <section class="hero-banner">
+                    <h1 class="hero-title">DECRYPT THE<br>UNKNOWN.</h1>
+                    <p class="hero-subtitle">Engage the probabilistic parsing engine. Yields vary from standard data packets to transcendent-tier infrastructure. Fortune favors the bold.</p>
+                    <div class="gacha-btn-group">
+                        <button class="btn-gacha" onclick="pullGacha(1, 100)">1x PULL (100 Ð)</button>
+                        <button class="btn-gacha ten-pull" onclick="pullGacha(10, 900)">10x PULL (900 Ð)</button>
+                        <button class="btn-gacha degen-pull" onclick="pullGacha(1, 10000)">DEGEN PULL (10,000 Ð)</button>
                     </div>
-                    <button class="buy-btn" onclick="triggerCasino(50)">DECODE</button>
-                </div>
-                <div class="store-item" id="block-tesla">
-                    <div>
-                        <h3>Red Roadster (500 Ð)</h3>
-                        <p>Deploy a car into permanent orbit.</p>
+                </section>
+
+                <div class="store-ad-banner">
+                    <div class="ad-text-wrapper">
+                        <h3>Own real estate on Mars!</h3>
+                        <p>Terraforming contracts starting at just 50M Ð. Join the elite.</p>
                     </div>
-                    <button class="buy-btn" id="btn-tesla" onclick="buyItem('tesla')">PURCHASE</button>
+                    <button class="btn-ad" onclick="alert('Insufficient Funds. Keep working.')">INQUIRE</button>
                 </div>
-                <div class="store-item" id="block-crew">
-                    <div>
-                        <h3>Crew Dragon Rating (1,000 Ð)</h3>
-                        <p>Deploy orbital astronauts.</p>
+
+                <section class="carousel-section">
+                    <h2 class="carousel-title">ORBITAL ASSETS (DIRECT SECURE)</h2>
+                    <div class="carousel-track">
+                        <div class="card card-tier-rare" id="card-tesla">
+                            <div>
+                                <h3>Red Roadster</h3>
+                                <p>Deploy a high-velocity car into permanent orbit. Pure aesthetic dominance.</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="card-price">500 Ð</span>
+                                <button class="btn-buy-card" onclick="toggleOrBuyItem('tesla')">ACQUIRE</button>
+                            </div>
+                        </div>
+                        <div class="card card-tier-epic" id="card-crew">
+                            <div>
+                                <h3>Crew Dragon</h3>
+                                <p>Human-rated orbital insertion. Enables biological cargo missions.</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="card-price">1,000 Ð</span>
+                                <button class="btn-buy-card" onclick="toggleOrBuyItem('crew')">ACQUIRE</button>
+                            </div>
+                        </div>
+                        <div class="card card-tier-epic" id="card-moon">
+                            <div>
+                                <h3>Lunar Gateway</h3>
+                                <p>Shift operational locus to the Moon. Applies a 5x multiplier to base Doge extraction.</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="card-price">2,000 Ð</span>
+                                <button class="btn-buy-card" onclick="toggleOrBuyItem('moon')">ACQUIRE</button>
+                            </div>
+                        </div>
+                        <div class="card card-tier-epic" id="card-station">
+                            <div>
+                                <h3>Orbital Station</h3>
+                                <p>Deploy colossal orbital infrastructure. Permanent modular expansion.</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="card-price">2,500 Ð</span>
+                                <button class="btn-buy-card" onclick="toggleOrBuyItem('station')">ACQUIRE</button>
+                            </div>
+                        </div>
+                        <div class="card card-tier-legendary" id="card-mars">
+                            <div>
+                                <h3>Mars Base Alpha</h3>
+                                <p>The ultimate goal. Shift locus to Mars. Applies a 10x multiplier to base Doge extraction.</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="card-price">10,000 Ð</span>
+                                <button class="btn-buy-card" onclick="toggleOrBuyItem('mars')">ACQUIRE</button>
+                            </div>
+                        </div>
                     </div>
-                    <button class="buy-btn" id="btn-crew" onclick="buyItem('crew')">PURCHASE</button>
-                </div>
-                <div class="store-item" id="block-moon">
-                    <div>
-                        <h3>Lunar Gateway (1,000 Ð)</h3>
-                        <p>Shift operations to Moon. Base Doge x5.</p>
+                </section>
+
+                <div class="store-ad-banner" style="background: repeating-linear-gradient(45deg, #110000 0, #110000 10px, #1a0000 10px, #1a0000 20px); border-color: #300;">
+                    <div class="ad-text-wrapper">
+                        <h3 style="color: var(--accent-red);">BRAWNDO ENERGY</h3>
+                        <p>It's got electrolytes! The thirst mutilator!</p>
                     </div>
-                    <button class="buy-btn" id="btn-moon" onclick="buyItem('moon')">PURCHASE</button>
+                    <button class="btn-ad" style="border-color: var(--accent-red); color: var(--accent-red);" onclick="alert('Out of stock.')">CONSUME</button>
                 </div>
-                <div class="store-item" id="block-station">
-                    <div>
-                        <h3>Orbital Station (2,000 Ð)</h3>
-                        <p>Deploy large structure to orbit.</p>
+
+                <section class="carousel-section">
+                    <h2 class="carousel-title">COSMETICS & POWERUPS (INVENTORY)</h2>
+                    <div class="carousel-track" id="cosmeticsTrack">
+                        <div class="card card-tier-mythic" id="card-flame">
+                            <div>
+                                <h3 style="color: var(--tier-mythic);">Boring Flamethrower</h3>
+                                <p>Not a flamethrower. Sets the primary user interface ablaze. Procedural fire overlay.</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="gacha-exclusive-tag">GACHA EXCLUSIVE - 0.2%</span>
+                                <button class="btn-buy-card" onclick="toggleOrBuyItem('flame')">LOCKED</button>
+                            </div>
+                        </div>
+                        <div class="card card-tier-epic" id="card-hyper_plume">
+                            <div>
+                                <h3 style="color: var(--tier-epic);">Hyper Plume Injection</h3>
+                                <p>Alters the Raptor engine exhaust gradient. Pure visual flex.</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="gacha-exclusive-tag">GACHA EXCLUSIVE - 1.0%</span>
+                                <button class="btn-buy-card" onclick="toggleOrBuyItem('hyper_plume')">LOCKED</button>
+                            </div>
+                        </div>
+                        <div class="card card-tier-omega" id="card-contraband">
+                            <div>
+                                <h3 style="color: var(--tier-omega);">[ REDACTED FILE ]</h3>
+                                <p>Unknown orbital parameters. Presence indicates system anomaly.</p>
+                            </div>
+                            <div class="card-footer">
+                                <span class="gacha-exclusive-tag">DEGEN EXCLUSIVE - 0.5%</span>
+                                <button class="btn-buy-card" onclick="toggleOrBuyItem('contraband')" style="border-color:var(--tier-omega); color:var(--tier-omega);">LOCKED</button>
+                            </div>
+                        </div>
                     </div>
-                    <button class="buy-btn" id="btn-station" onclick="buyItem('station')">PURCHASE</button>
-                </div>
-                <div class="store-item" id="block-mars">
-                    <div>
-                        <h3>Mars Base Alpha (5,000 Ð)</h3>
-                        <p>Shift operations to Mars. Base Doge x10.</p>
-                    </div>
-                    <button class="buy-btn" id="btn-mars" onclick="buyItem('mars')">PURCHASE</button>
-                </div>
-                <div class="store-item" id="block-flame">
-                    <div>
-                        <h3 style="color: var(--accent-orange);">Boring Flamethrower (5,000 Ð)</h3>
-                        <p>Activates persistent UI fire overlay.</p>
-                    </div>
-                    <button class="buy-btn" id="btn-flame" onclick="buyItem('flame')" style="color: var(--accent-orange); border-color: var(--accent-orange);">ACQUIRE</button>
-                </div>
+                </section>
             </div>
         </div>
     </div>
 
+    <!-- GACHA OVERLAY -->
+    <div class="gacha-reveal-overlay" id="gachaOverlay">
+        <div id="particleContainer"></div>
+        <div class="gacha-pod" id="gachaPod"></div>
+        <div class="gacha-result-card" id="gachaResult">
+            <div class="res-tier" id="resTier">TIER</div>
+            <div class="res-title" id="resTitle">ITEM NAME</div>
+            <div class="res-desc" id="resDesc">Description</div>
+            <div class="res-value" id="resValue"></div>
+            <button class="btn-gacha-continue" id="btnGachaNext" onclick="processNextGacha()">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="timerModal">
-        <div class="modal-content" style="width: 400px;">
+        <div class="modal-content" style="width: 400px; position:absolute; z-index:9999;">
             <div class="modal-title">Flight Profile Duration</div>
             <div class="test-form">
                 <div>
@@ -724,18 +723,8 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="quoteModal">
-        <div class="modal-content lootbox-title">
-            <div class="modal-title">𝕏 Transmission Link</div>
-            <div class="slot-machine" id="slotDisplay">[ - - - ]</div>
-            <div class="lootbox-rewards" id="lootRewards"></div>
-            <div class="lootbox-quote" id="quoteText">"..."</div>
-            <button class="close-btn" id="btnCloseQuote">ACKNOWLEDGE</button>
-        </div>
-    </div>
-
     <div class="modal-overlay" id="testModal">
-        <div class="modal-content" style="width: 450px;">
+        <div class="modal-content" style="position:absolute; z-index:9999;">
             <div class="modal-title">SysAdmin Override</div>
             <div class="test-form">
                 <div>
@@ -760,143 +749,66 @@
 </div>
 
 <script>
-    const STAGING_MECO = 0.25;
-    const STAGING_SEP = 0.26;
-    const LANDING_DONE = 0.50; 
-    const PAD_Y = 720;
-    const PAD_X = 300;
-    
-    let sessionState = 'IDLE';
-    let exactProgress = 0;
-    let isRunning = false;
-    let countdownTimer = null;
-    let lastFrameTime = 0;
-    let speedMult = 1;
-    let totalPathLength = 0;
-    let returnPathLength = 0;
-    
-    let completedMissions = 0;
-    let dogeCurrency = 0;
-    let activePlanet = 'earth';
-    let eventsLogged = { meco: false, sep: false, land: false, exp: false };
-    let isDfMode = false;
+    const STAGING_MECO = 0.25; const STAGING_SEP = 0.26; const LANDING_DONE = 0.50; const PAD_Y = 720; const PAD_X = 300;
+    let sessionState = 'IDLE'; let exactProgress = 0; let isRunning = false; let countdownTimer = null; let lastFrameTime = 0; let speedMult = 1; let totalPathLength = 0; let returnPathLength = 0;
+    let completedMissions = 0; let dogeCurrency = 0; let activePlanet = 'earth'; let eventsLogged = { meco: false, sep: false, land: false, exp: false }; let isDfMode = false;
     
     let upgrades = { 
-        crew: { owned: false, active: false, cost: 1000 }, 
-        station: { owned: false, active: false, cost: 2000 }, 
-        flame: { owned: false, active: false, cost: 5000 }, 
-        moon: { owned: false, active: false, cost: 1000 }, 
-        mars: { owned: false, active: false, cost: 5000 }, 
-        tesla: { owned: false, active: false, cost: 500 } 
+        crew: { owned: false, active: false, cost: 1000, type: 'direct' }, 
+        station: { owned: false, active: false, cost: 2500, type: 'direct' }, 
+        moon: { owned: false, active: false, cost: 2000, type: 'direct' }, 
+        mars: { owned: false, active: false, cost: 10000, type: 'direct' }, 
+        tesla: { owned: false, active: false, cost: 500, type: 'direct' },
+        flame: { owned: false, active: false, cost: 0, type: 'gacha' },
+        hyper_plume: { owned: false, active: false, cost: 0, type: 'gacha' },
+        contraband: { owned: false, active: false, cost: 0, type: 'gacha' }
     };
 
-    const orbitalItems = [
-        { id: 'stationUnlock', speed: 0.00002, offset: 0 },
-        { id: 'teslaUnlock', speed: 0.00003, offset: 0.3 },
-        { id: 'crewUnlock', speed: 0.000025, offset: 0.6 }
-    ];
+    let gachaQueue = []; let isGachaPulling = false; let audioCtx = null;
+    const orbitalItems = [{ id: 'stationUnlock', speed: 0.00002, offset: 0 }, { id: 'teslaUnlock', speed: 0.00003, offset: 0.3 }, { id: 'crewUnlock', speed: 0.000025, offset: 0.6 }];
     let starlinkData = [];
-    let audioCtx = null;
 
     const elonQuotes = [
         "When something is important enough, you do it even if the odds are not in your favor.",
-        "Persistence is very important. You should not give up unless you are forced to give up.",
         "If things are not failing, you are not innovating enough.",
-        "I think it is possible for ordinary people to choose to be extraordinary.",
-        "Rockets are cool. There's no getting around that.",
-        "Who controls the memes, controls the Universe."
+        "It is possible for ordinary people to choose to be extraordinary.",
+        "You get paid in direct proportion to the difficulty of problems you solve.",
+        "The impediment to action advances action. What stands in the way becomes the way. - Marcus Aurelius",
+        "He who has a why to live for can bear almost any how. - Friedrich Nietzsche",
+        "Discipline equals freedom. - Jocko Willink",
+        "Amateurs sit and wait for inspiration, the rest of us just get up and go to work. - Stephen King",
+        "To dare is to lose one's footing momentarily. Not to dare is to lose oneself. - Søren Kierkegaard",
+        "We are what we repeatedly do. Excellence, then, is not an act, but a habit. - Aristotle"
     ];
 
     const DOM = {
-        startMenu: document.getElementById('startMenu'),
-        btnInit: document.getElementById('btnInitLaunch'),
-        bigLaunchWrapper: document.getElementById('bigLaunchWrapper'),
-        bigLaunchBtn: document.getElementById('bigLaunchBtn'),
-        lowerHud: document.getElementById('lowerHud'),
-        time: document.getElementById('timeDisplay'),
-        phase: document.getElementById('phaseDisplay'),
-        pitch: document.getElementById('pitchDisplay'),
-        alt: document.getElementById('altDisplay'),
-        vel: document.getElementById('velDisplay'),
-        progress: document.getElementById('progressBar'),
-        trajBg: document.getElementById('trajBg'),
-        trajActive: document.getElementById('trajActive'),
-        returnPath: document.getElementById('returnPath'),
-        ship: document.getElementById('starship'),
-        booster: document.getElementById('booster'),
-        reset: document.getElementById('btnReset'),
-        dfReset: document.getElementById('btnDfReset'),
-        log: document.getElementById('missionLog'),
-        workIn: document.getElementById('workInput'),
-        restIn: document.getElementById('restInput'),
-        todoToggle: document.getElementById('todoToggle'),
-        todoContent: document.getElementById('todoContent'),
-        todoInput: document.getElementById('todoInput'),
-        todoList: document.getElementById('todoList'),
-        missionCount: document.getElementById('missionCount'),
-        dogeCount: document.getElementById('dogeCount'),
-        btnStore: document.getElementById('btnStore'),
-        storeModal: document.getElementById('storeModal'),
-        quoteModal: document.getElementById('quoteModal'),
-        quoteText: document.getElementById('quoteText'),
-        lootRewards: document.getElementById('lootRewards'),
-        slotDisplay: document.getElementById('slotDisplay'),
-        btnCloseStore: document.getElementById('btnCloseStore'),
-        btnCloseQuote: document.getElementById('btnCloseQuote'),
-        visualizerBg: document.getElementById('visualizerBg'),
-        bodyEnv: document.getElementById('bodyEnv'),
-        destBadge: document.getElementById('destBadge'),
-        orbitalLayer: document.getElementById('orbitalLayer'),
-        svgShip: document.getElementById('svgShip'),
-        svgBooster: document.getElementById('svgBooster'),
-        testModal: document.getElementById('testModal'),
-        btnApplyTest: document.getElementById('btnApplyTest'),
-        btnResetTest: document.getElementById('btnResetTest'),
-        tSpeed: document.getElementById('testSpeed'),
-        tMissions: document.getElementById('testMissions'),
-        tCurrency: document.getElementById('testCurrency'),
-        mechazilla: document.getElementById('mechazilla'),
-        realtimeClock: document.getElementById('realtimeClock'),
-        timerModal: document.getElementById('timerModal'),
-        btnApplyTimer: document.getElementById('btnApplyTimer'),
-        btnDfToggle: document.getElementById('btnDfToggle')
+        startMenu: document.getElementById('startMenu'), btnInit: document.getElementById('btnInitLaunch'), bigLaunchWrapper: document.getElementById('bigLaunchWrapper'), bigLaunchBtn: document.getElementById('bigLaunchBtn'),
+        lowerHud: document.getElementById('lowerHud'), time: document.getElementById('timeDisplay'), phase: document.getElementById('phaseDisplay'), pitch: document.getElementById('pitchDisplay'), alt: document.getElementById('altDisplay'),
+        vel: document.getElementById('velDisplay'), progress: document.getElementById('progressBar'), trajBg: document.getElementById('trajBg'), trajActive: document.getElementById('trajActive'), returnPath: document.getElementById('returnPath'),
+        ship: document.getElementById('starship'), booster: document.getElementById('booster'), reset: document.getElementById('btnReset'), dfReset: document.getElementById('btnDfReset'), log: document.getElementById('missionLog'),
+        workIn: document.getElementById('workInput'), restIn: document.getElementById('restInput'), todoToggle: document.getElementById('todoToggle'), todoContent: document.getElementById('todoContent'), todoInput: document.getElementById('todoInput'),
+        todoList: document.getElementById('todoList'), missionCount: document.getElementById('missionCount'), dogeCount: document.getElementById('dogeCount'), btnStore: document.getElementById('btnStore'), storeModal: document.getElementById('storeModal'),
+        storeDogeBal: document.getElementById('storeDogeBal'), btnCloseStore: document.getElementById('btnCloseStore'), visualizerBg: document.getElementById('visualizerBg'), bodyEnv: document.getElementById('bodyEnv'),
+        destBadge: document.getElementById('destBadge'), orbitalLayer: document.getElementById('orbitalLayer'), svgShip: document.getElementById('svgShip'), svgBooster: document.getElementById('svgBooster'),
+        testModal: document.getElementById('testModal'), btnApplyTest: document.getElementById('btnApplyTest'), btnResetTest: document.getElementById('btnResetTest'), tSpeed: document.getElementById('testSpeed'),
+        tMissions: document.getElementById('testMissions'), tCurrency: document.getElementById('testCurrency'), mechazilla: document.getElementById('mechazilla'), realtimeClock: document.getElementById('realtimeClock'),
+        timerModal: document.getElementById('timerModal'), btnApplyTimer: document.getElementById('btnApplyTimer'), btnDfToggle: document.getElementById('btnDfToggle'), gachaOverlay: document.getElementById('gachaOverlay'),
+        gachaPod: document.getElementById('gachaPod'), gachaResult: document.getElementById('gachaResult'), resTier: document.getElementById('resTier'), resTitle: document.getElementById('resTitle'),
+        resDesc: document.getElementById('resDesc'), resValue: document.getElementById('resValue'), btnGachaNext: document.getElementById('btnGachaNext'), particleContainer: document.getElementById('particleContainer')
     };
 
     function createTodoItem(text, done) {
-        const li = document.createElement('li');
-        li.className = 'todo-item' + (done ? ' done' : '');
-        
-        const txtSpan = document.createElement('span');
-        txtSpan.className = 'todo-item-text';
-        txtSpan.textContent = text;
-        
-        const delBtn = document.createElement('span');
-        delBtn.className = 'todo-delete';
-        delBtn.innerHTML = '&times;';
-        
-        txtSpan.addEventListener('click', () => {
-            li.classList.toggle('done');
-            saveMokusData();
-        });
-        
-        delBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            li.remove();
-            saveMokusData();
-        });
-        
-        li.appendChild(txtSpan);
-        li.appendChild(delBtn);
-        return li;
+        const li = document.createElement('li'); li.className = 'todo-item' + (done ? ' done' : '');
+        const txtSpan = document.createElement('span'); txtSpan.className = 'todo-item-text'; txtSpan.textContent = text;
+        const delBtn = document.createElement('span'); delBtn.className = 'todo-delete'; delBtn.innerHTML = '&times;';
+        txtSpan.addEventListener('click', () => { li.classList.toggle('done'); saveMokusData(); });
+        delBtn.addEventListener('click', (e) => { e.stopPropagation(); li.remove(); saveMokusData(); });
+        li.appendChild(txtSpan); li.appendChild(delBtn); return li;
     }
 
     function saveMokusData() {
-        const todos = Array.from(DOM.todoList.children).map(li => ({
-            text: li.querySelector('.todo-item-text').textContent,
-            done: li.classList.contains('done')
-        }));
-        const data = { completedMissions, dogeCurrency, upgrades, activePlanet, todos, isDfMode };
-        localStorage.setItem('mokusData', JSON.stringify(data));
+        const todos = Array.from(DOM.todoList.children).map(li => ({ text: li.querySelector('.todo-item-text').textContent, done: li.classList.contains('done') }));
+        localStorage.setItem('mokusData', JSON.stringify({ completedMissions, dogeCurrency, upgrades, activePlanet, todos, isDfMode }));
     }
 
     function loadMokusData() {
@@ -904,67 +816,39 @@
         if (dataStr) {
             try {
                 const data = JSON.parse(dataStr);
-                completedMissions = data.completedMissions || 0;
-                dogeCurrency = data.dogeCurrency || 0;
-                if (data.upgrades) upgrades = data.upgrades;
+                completedMissions = data.completedMissions || 0; dogeCurrency = data.dogeCurrency || 0;
+                if (data.upgrades) Object.keys(data.upgrades).forEach(k => { if(upgrades[k]) { upgrades[k].owned = data.upgrades[k].owned; upgrades[k].active = data.upgrades[k].active; }});
                 if (data.activePlanet) activePlanet = data.activePlanet;
-                
-                if (data.todos && Array.isArray(data.todos)) {
-                    DOM.todoList.innerHTML = '';
-                    data.todos.forEach(t => {
-                        DOM.todoList.appendChild(createTodoItem(t.text, t.done));
-                    });
-                }
+                if (data.todos && Array.isArray(data.todos)) { DOM.todoList.innerHTML = ''; data.todos.forEach(t => DOM.todoList.appendChild(createTodoItem(t.text, t.done))); }
+                if (data.isDfMode !== undefined) { isDfMode = data.isDfMode; document.body.classList.toggle('df-mode', isDfMode); if(DOM.btnDfToggle) DOM.btnDfToggle.textContent = isDfMode ? "NORMAL MODE" : "ZEN MODE"; }
+            } catch (e) { console.error("Save data parse error", e); }
+        }
+        syncStoreUI();
+    }
 
-                if (data.isDfMode !== undefined) {
-                    isDfMode = data.isDfMode;
-                    document.body.classList.toggle('df-mode', isDfMode);
-                    if(DOM.btnDfToggle) DOM.btnDfToggle.textContent = isDfMode ? "NORMAL MODE" : "ZEN MODE";
+    function syncStoreUI() {
+        Object.keys(upgrades).forEach(key => {
+            const card = document.getElementById('card-' + key);
+            if(card) {
+                const btn = card.querySelector('.btn-buy-card');
+                if (upgrades[key].owned) {
+                    card.classList.add('owned');
+                    if (upgrades[key].active) { card.classList.add('is-active-toggle'); btn.textContent = "TOGGLE OFF"; } 
+                    else { card.classList.remove('is-active-toggle'); btn.textContent = "TOGGLE ON"; }
+                } else {
+                    card.classList.remove('owned'); card.classList.remove('is-active-toggle');
+                    if (upgrades[key].type === 'direct') btn.textContent = "ACQUIRE"; else btn.textContent = "LOCKED";
                 }
-                
-                Object.keys(upgrades).forEach(key => {
-                    if (upgrades[key].owned) {
-                        const btn = document.getElementById('btn-' + key);
-                        if(btn) {
-                            btn.textContent = upgrades[key].active ? "TOGGLE OFF" : "TOGGLE ON";
-                            btn.style.color = upgrades[key].active ? "#fff" : "#888";
-                            btn.style.borderColor = upgrades[key].active ? "#fff" : "#444";
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error("Save data parse error", e);
             }
-        }
-    }
-
-    loadMokusData();
-
-    if (DOM.btnDfToggle) {
-        DOM.btnDfToggle.addEventListener('click', () => {
-            isDfMode = !isDfMode;
-            document.body.classList.toggle('df-mode', isDfMode);
-            DOM.btnDfToggle.textContent = isDfMode ? "NORMAL MODE" : "ZEN MODE";
-            saveMokusData();
         });
+        DOM.storeDogeBal.textContent = dogeCurrency.toLocaleString();
     }
 
-    setInterval(() => {
-        DOM.realtimeClock.textContent = new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false});
-    }, 1000);
-
-    DOM.todoToggle.addEventListener('click', () => {
-        DOM.todoContent.classList.toggle('collapsed');
-    });
-
-    DOM.todoInput.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter' && DOM.todoInput.value.trim() !== '') {
-            DOM.todoList.appendChild(createTodoItem(DOM.todoInput.value.trim(), false));
-            DOM.todoInput.value = '';
-            saveMokusData();
-        }
-    });
-
+    if (DOM.btnDfToggle) { DOM.btnDfToggle.addEventListener('click', () => { isDfMode = !isDfMode; document.body.classList.toggle('df-mode', isDfMode); DOM.btnDfToggle.textContent = isDfMode ? "NORMAL MODE" : "ZEN MODE"; saveMokusData(); }); }
+    setInterval(() => DOM.realtimeClock.textContent = new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false}), 1000);
+    DOM.todoToggle.addEventListener('click', () => DOM.todoContent.classList.toggle('collapsed'));
+    DOM.todoInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && DOM.todoInput.value.trim() !== '') { DOM.todoList.appendChild(createTodoItem(DOM.todoInput.value.trim(), false)); DOM.todoInput.value = ''; saveMokusData(); } });
+    
     DOM.btnInit.addEventListener('click', () => {
         DOM.startMenu.classList.add('hidden');
         if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -972,102 +856,50 @@
         init();
     });
 
-    DOM.realtimeClock.addEventListener('click', () => {
-        if(sessionState === 'IDLE') DOM.timerModal.classList.add('active');
-    });
-    DOM.btnApplyTimer.addEventListener('click', () => {
-        updateTimeDisplay(getWorkTime());
-        DOM.timerModal.classList.remove('active');
-    });
+    DOM.realtimeClock.addEventListener('click', () => { if(sessionState === 'IDLE') DOM.timerModal.classList.add('active'); });
+    DOM.btnApplyTimer.addEventListener('click', () => { updateTimeDisplay(getWorkTime()); DOM.timerModal.classList.remove('active'); });
 
     function generateEngineSVGs() {
         let bHtml = '';
-        [20, 10, 3].forEach((count, ringIdx) => {
-            const radii = [40, 24, 8];
-            const cls = ringIdx === 0 ? 'b-outer' : (ringIdx === 1 ? 'b-mid' : 'b-inner');
-            for(let i=0; i<count; i++) {
-                const angle = (i/count) * Math.PI * 2;
-                bHtml += `<circle cx="${50 + Math.cos(angle)*radii[ringIdx]}" cy="${50 + Math.sin(angle)*radii[ringIdx]}" r="3.5" class="eng-nozzle ${cls}"/>`;
-            }
-        });
+        [20, 10, 3].forEach((count, ringIdx) => { const radii = [40, 24, 8]; const cls = ringIdx === 0 ? 'b-outer' : (ringIdx === 1 ? 'b-mid' : 'b-inner'); for(let i=0; i<count; i++) { const angle = (i/count) * Math.PI * 2; bHtml += `<circle cx="${50 + Math.cos(angle)*radii[ringIdx]}" cy="${50 + Math.sin(angle)*radii[ringIdx]}" r="3.5" class="eng-nozzle ${cls}"/>`; } });
         DOM.svgBooster.innerHTML = bHtml;
-
         let sHtml = '';
-        [3, 3].forEach((count, ringIdx) => {
-            const radii = [30, 10];
-            const cls = ringIdx === 0 ? 's-vac' : 's-sl';
-            for(let i=0; i<count; i++) {
-                const angle = (i/count) * Math.PI * 2 + (ringIdx===0?Math.PI/3:0);
-                sHtml += `<circle cx="${50 + Math.cos(angle)*radii[ringIdx]}" cy="${50 + Math.sin(angle)*radii[ringIdx]}" r="6" class="eng-nozzle ${cls}"/>`;
-            }
-        });
+        [3, 3].forEach((count, ringIdx) => { const radii = [30, 10]; const cls = ringIdx === 0 ? 's-vac' : 's-sl'; for(let i=0; i<count; i++) { const angle = (i/count) * Math.PI * 2 + (ringIdx===0?Math.PI/3:0); sHtml += `<circle cx="${50 + Math.cos(angle)*radii[ringIdx]}" cy="${50 + Math.sin(angle)*radii[ringIdx]}" r="6" class="eng-nozzle ${cls}"/>`; } });
         DOM.svgShip.innerHTML = sHtml;
     }
 
     function initOrbitalData() {
-        starlinkData = [];
-        const satsToDraw = Math.min(completedMissions * 5, 200); 
-        for(let i=0; i<satsToDraw; i++) {
-            starlinkData.push({
-                speed: 0.00004 + (Math.random() * 0.00002),
-                offset: Math.random(),
-                radiusOff: (i % 5) * 15,
-                yAmp: 300 + Math.random() * 100
-            });
-        }
+        starlinkData = []; const satsToDraw = Math.min(completedMissions * 5, 200); 
+        for(let i=0; i<satsToDraw; i++) starlinkData.push({ speed: 0.00004 + (Math.random() * 0.00002), offset: Math.random(), radiusOff: (i % 5) * 15, yAmp: 300 + Math.random() * 100 });
     }
 
     function init() {
-        totalPathLength = DOM.trajBg.getTotalLength();
-        returnPathLength = DOM.returnPath.getTotalLength();
-        DOM.trajActive.style.strokeDasharray = `0 9999`;
-        generateEngineSVGs();
-        initOrbitalData();
-        updateTimeDisplay(getWorkTime());
-        syncMetaUI();
-        updateVisuals(0);
-        requestAnimationFrame(renderLoop);
+        totalPathLength = DOM.trajBg.getTotalLength(); returnPathLength = DOM.returnPath.getTotalLength(); DOM.trajActive.style.strokeDasharray = `0 9999`;
+        generateEngineSVGs(); initOrbitalData(); updateTimeDisplay(getWorkTime()); syncMetaUI(); updateVisuals(0); requestAnimationFrame(renderLoop);
     }
 
     function getWorkTime() { return Math.max(1, parseInt(DOM.workIn.value) || 25) * 60; }
     function getRestTime() { return Math.max(1, parseInt(DOM.restIn.value) || 5) * 60; }
-    function formatTime(sec) {
-        const m = Math.floor(sec / 60).toString().padStart(2, '0');
-        const s = Math.floor(sec % 60).toString().padStart(2, '0');
-        return `${m}:${s}`;
-    }
+    function formatTime(sec) { const m = Math.floor(sec / 60).toString().padStart(2, '0'); const s = Math.floor(sec % 60).toString().padStart(2, '0'); return `${m}:${s}`; }
 
     function playTone(freq, type, duration) {
-        if(!audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type; osc.frequency.value = freq;
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        gain.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        if(!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.value = freq; osc.connect(gain); gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
     function playSound(type) {
-        if(!audioCtx) return;
-        const now = audioCtx.currentTime;
+        if(!audioCtx) return; const now = audioCtx.currentTime;
         if(type === 'launch' || type === 'exp') {
-            const bufferSize = audioCtx.sampleRate * (type === 'exp' ? 3 : 5);
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
+            const bufferSize = audioCtx.sampleRate * (type === 'exp' ? 3 : 5); const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate); const data = buffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
-            const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass';
-            filter.frequency.value = type === 'exp' ? 2000 : 100;
-            if(type === 'exp') filter.frequency.exponentialRampToValueAtTime(100, now + 2);
-            const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(type === 'exp' ? 2.0 : 0, now);
-            if(type === 'launch') {
-                gain.gain.linearRampToValueAtTime(1.5, now + 1.0); gain.gain.setValueAtTime(1.5, now + 4); gain.gain.linearRampToValueAtTime(0, now + 5);
-            } else { gain.gain.exponentialRampToValueAtTime(0.01, now + 2.5); }
-            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-            noise.start(now);
+            const noise = audioCtx.createBufferSource(); noise.buffer = buffer; const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass';
+            filter.frequency.value = type === 'exp' ? 2000 : 100; if(type === 'exp') filter.frequency.exponentialRampToValueAtTime(100, now + 2);
+            const gain = audioCtx.createGain(); gain.gain.setValueAtTime(type === 'exp' ? 2.0 : 0, now);
+            if(type === 'launch') { gain.gain.linearRampToValueAtTime(1.5, now + 1.0); gain.gain.setValueAtTime(1.5, now + 4); gain.gain.linearRampToValueAtTime(0, now + 5); } 
+            else { gain.gain.exponentialRampToValueAtTime(0.01, now + 2.5); }
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); noise.start(now);
         } else if (type === 'orbit' || type === 'loot') {
             [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
                 const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
@@ -1078,207 +910,133 @@
         }
     }
 
+    function spawnParticles(color) {
+        DOM.particleContainer.innerHTML = '';
+        for(let i=0; i<50; i++) {
+            const p = document.createElement('div'); p.className = 'gacha-particle'; p.style.background = color;
+            const angle = Math.random() * Math.PI * 2; const dist = Math.random() * 300 + 100;
+            p.style.setProperty('--tx', `${Math.cos(angle)*dist}px`); p.style.setProperty('--ty', `${Math.sin(angle)*dist}px`);
+            p.style.left = '50%'; p.style.top = '50%';
+            DOM.particleContainer.appendChild(p);
+        }
+    }
+
+    function playEpicWindup(tier) {
+        if(!audioCtx) return; const now = audioCtx.currentTime;
+        const oscSub = audioCtx.createOscillator(); const gainSub = audioCtx.createGain();
+        oscSub.type = 'triangle'; oscSub.frequency.setValueAtTime(30, now);
+        oscSub.connect(gainSub); gainSub.connect(audioCtx.destination);
+        gainSub.gain.setValueAtTime(0, now); gainSub.gain.linearRampToValueAtTime(0.4, now + 1.5); gainSub.gain.linearRampToValueAtTime(0, now + 1.6);
+        oscSub.start(now); oscSub.stop(now + 1.6);
+
+        let maxFreq = tier === 'MYTHIC' || tier === 'OMEGA' ? 800 : (tier === 'LEGENDARY' ? 600 : 400);
+        [100, 200, 300].forEach(freq => {
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(freq, now); osc.frequency.exponentialRampToValueAtTime(maxFreq, now + 1.5);
+            gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.1, now + 1.2); gain.gain.linearRampToValueAtTime(0, now + 1.6);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + 1.6);
+        });
+    }
+
+    function playEpicImpact(tier) {
+        if(!audioCtx) return; const now = audioCtx.currentTime;
+        let baseFreqs = tier === 'OMEGA' ? [32.70, 65.41, 98.00, 130.81, 196.00] : [65.41, 98.00, 130.81, 196.00];
+        baseFreqs.forEach(freq => {
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = tier === 'OMEGA' ? 'square' : 'sawtooth'; osc.frequency.value = freq;
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.3, now + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, now + 4);
+            osc.start(now); osc.stop(now + 4);
+        });
+    }
+
     function logEvent(msg, type = 'normal') {
-        const el = document.createElement('div');
-        el.className = 'log-entry';
-        let tStr = "SYS";
+        const el = document.createElement('div'); el.className = 'log-entry'; let tStr = "SYS";
         if(sessionState === 'WORK') tStr = `T+${formatTime(getWorkTime() - Math.ceil(getWorkTime() * (1 - exactProgress)))}`;
         else if (sessionState === 'REST') tStr = `C-${formatTime(Math.ceil(getRestTime() * (1 - exactProgress)))}`;
         else if (sessionState === 'PRELAUNCH') tStr = `T-`;
-        
         let content = `<span class="log-time">${tStr}</span>`;
         if (type === 'quote') content += `<span class="log-quote">${msg}</span>`;
         else if (type === 'loot') content += `<span class="log-loot">${msg}</span>`;
         else content += `<span style="color: ${type==='success'?'var(--accent-green)':(type==='error'?'var(--accent-red)':'inherit')}">${msg}</span>`;
-        
-        el.innerHTML = content;
-        DOM.log.appendChild(el);
-        DOM.log.scrollTop = DOM.log.scrollHeight;
+        el.innerHTML = content; DOM.log.appendChild(el); DOM.log.scrollTop = DOM.log.scrollHeight;
     }
 
-    function updateTimeDisplay(seconds) { 
-        if(sessionState !== 'PRELAUNCH') DOM.time.textContent = formatTime(seconds); 
-    }
+    function updateTimeDisplay(seconds) { if(sessionState !== 'PRELAUNCH') DOM.time.textContent = formatTime(seconds); }
 
     function syncMetaUI() {
-        DOM.missionCount.textContent = completedMissions;
-        DOM.dogeCount.textContent = dogeCurrency;
-        
+        DOM.missionCount.textContent = completedMissions; DOM.dogeCount.textContent = dogeCurrency.toLocaleString();
         DOM.bodyEnv.className = '';
         if (activePlanet === 'mars') { DOM.bodyEnv.classList.add('env-mars'); DOM.destBadge.textContent = "MARS BASE ALPHA"; } 
         else if (activePlanet === 'moon') { DOM.bodyEnv.classList.add('env-moon'); DOM.destBadge.textContent = "LUNAR GATEWAY"; } 
         else { DOM.bodyEnv.classList.add('env-earth'); DOM.destBadge.textContent = "LEO INSERTION"; }
-
-        if (document.body.classList.contains('df-mode')) {
-            DOM.bodyEnv.classList.add('df-mode');
-        }
-
+        if (document.body.classList.contains('df-mode')) DOM.bodyEnv.classList.add('df-mode');
         document.body.classList.toggle('flamethrower-active', upgrades.flame.active);
-        initOrbitalData(); 
+        document.body.classList.toggle('hyper-plume-active', upgrades.hyper_plume.active);
+        initOrbitalData(); syncStoreUI();
     }
 
     function renderOrbits(now) {
         let html = '';
-        starlinkData.forEach((s, i) => {
-            let p = ((now * s.speed) + s.offset) % 1;
-            let x = -200 + (2000 * p);
-            let y = s.yAmp - (Math.sin(p * Math.PI) * (s.yAmp - s.radiusOff));
-            html += `<circle cx="${x}" cy="${y}" r="2" class="starlink-sat"/>`;
-        });
-        
-        const oldSats = document.querySelectorAll('.starlink-sat');
-        oldSats.forEach(el => el.remove());
-        DOM.orbitalLayer.insertAdjacentHTML('beforeend', html);
-
+        starlinkData.forEach((s, i) => { let p = ((now * s.speed) + s.offset) % 1; let x = -200 + (2000 * p); let y = s.yAmp - (Math.sin(p * Math.PI) * (s.yAmp - s.radiusOff)); html += `<circle cx="${x}" cy="${y}" r="2" class="starlink-sat"/>`; });
+        document.querySelectorAll('.starlink-sat').forEach(el => el.remove()); DOM.orbitalLayer.insertAdjacentHTML('beforeend', html);
         orbitalItems.forEach(o => {
-            const el = document.getElementById(o.id);
-            const upgradeKey = o.id.replace('Unlock', '');
+            const el = document.getElementById(o.id); const upgradeKey = o.id.replace('Unlock', '');
             if(upgrades[upgradeKey]?.active) {
-                el.style.display = 'block';
-                let p = ((now * o.speed) + o.offset) % 1;
-                let x = -200 + (2000 * p);
-                let y = 300 - (Math.sin(p * Math.PI) * 200);
-                let dx = 2000; 
-                let dy = -200 * Math.PI * Math.cos(p * Math.PI);
-                let angle = Math.atan2(dy, dx) * (180 / Math.PI);
-                el.setAttribute('transform', `translate(${x}, ${y}) rotate(${angle})`);
-            } else {
-                el.style.display = 'none';
-            }
+                el.style.display = 'block'; let p = ((now * o.speed) + o.offset) % 1; let x = -200 + (2000 * p); let y = 300 - (Math.sin(p * Math.PI) * 200);
+                let dx = 2000; let dy = -200 * Math.PI * Math.cos(p * Math.PI); let angle = Math.atan2(dy, dx) * (180 / Math.PI); el.setAttribute('transform', `translate(${x}, ${y}) rotate(${angle})`);
+            } else { el.style.display = 'none'; }
         });
     }
 
     function updateVisuals(progress) {
         if (eventsLogged.exp) return; 
-
         if (sessionState === 'IDLE' || sessionState === 'WORK' || sessionState === 'PRELAUNCH') {
-            const pLen = progress * totalPathLength;
-            let shipLen = pLen + 120;
-            if (shipLen > totalPathLength) shipLen = totalPathLength;
-
-            DOM.progress.style.width = `${progress * 100}%`;
-
-            const ptBooster = DOM.trajBg.getPointAtLength(pLen);
-            const ptBoosterNext = DOM.trajBg.getPointAtLength(Math.min(pLen + 1, totalPathLength));
+            const pLen = progress * totalPathLength; let shipLen = Math.min(pLen + 120, totalPathLength); DOM.progress.style.width = `${progress * 100}%`;
+            const ptBooster = DOM.trajBg.getPointAtLength(pLen); const ptBoosterNext = DOM.trajBg.getPointAtLength(Math.min(pLen + 1, totalPathLength));
             let angleBooster = Math.atan2(ptBoosterNext.y - ptBooster.y, ptBoosterNext.x - ptBooster.x) * (180 / Math.PI) + 90;
-
             if (progress < STAGING_SEP) {
-                DOM.booster.setAttribute('transform', `translate(${ptBooster.x}, ${ptBooster.y}) rotate(${angleBooster})`);
-                DOM.ship.setAttribute('transform', `translate(${ptBooster.x}, ${ptBooster.y}) rotate(${angleBooster}) translate(0, -120)`);
-                DOM.trajActive.style.strokeDasharray = `${pLen} 9999`;
+                DOM.booster.setAttribute('transform', `translate(${ptBooster.x}, ${ptBooster.y}) rotate(${angleBooster})`); DOM.ship.setAttribute('transform', `translate(${ptBooster.x}, ${ptBooster.y}) rotate(${angleBooster}) translate(0, -120)`); DOM.trajActive.style.strokeDasharray = `${pLen} 9999`;
             } else {
-                const ptShip = DOM.trajBg.getPointAtLength(shipLen);
-                const ptShipNext = DOM.trajBg.getPointAtLength(Math.min(shipLen + 1, totalPathLength));
-                let angleShip = Math.atan2(ptShipNext.y - ptShip.y, ptShipNext.x - ptShip.x) * (180 / Math.PI) + 90;
-                
-                DOM.ship.setAttribute('transform', `translate(${ptShip.x}, ${ptShip.y}) rotate(${angleShip})`);
-                DOM.trajActive.style.strokeDasharray = `${shipLen} 9999`;
-                
-                const sepPt = DOM.trajBg.getPointAtLength(STAGING_SEP * totalPathLength);
-                const sepPtNext = DOM.trajBg.getPointAtLength(STAGING_SEP * totalPathLength + 1);
-                const sepAngle = Math.atan2(sepPtNext.y - sepPt.y, sepPtNext.x - sepPt.x) * (180 / Math.PI) + 90;
-                
-                let bProgress = Math.min(1, (progress - STAGING_SEP) / (LANDING_DONE - STAGING_SEP));
-                let currX = sepPt.x + Math.sin(bProgress * Math.PI) * 200 + (PAD_X - sepPt.x) * bProgress;
-                let currY = sepPt.y - Math.sin(bProgress * Math.PI) * 150 + (PAD_Y - sepPt.y) * bProgress;
-                
-                let currAngle;
-                if (bProgress < 0.25) { currAngle = sepAngle + (180 * (bProgress / 0.25)); } 
-                else if (bProgress < 0.85) { currAngle = 180; } 
-                else { currAngle = 180 + (180 * ((bProgress - 0.85) / 0.15)); }
-                DOM.booster.setAttribute('transform', `translate(${currX}, ${currY}) rotate(${currAngle})`);
+                const ptShip = DOM.trajBg.getPointAtLength(shipLen); const ptShipNext = DOM.trajBg.getPointAtLength(Math.min(shipLen + 1, totalPathLength)); let angleShip = Math.atan2(ptShipNext.y - ptShip.y, ptShipNext.x - ptShip.x) * (180 / Math.PI) + 90;
+                DOM.ship.setAttribute('transform', `translate(${ptShip.x}, ${ptShip.y}) rotate(${angleShip})`); DOM.trajActive.style.strokeDasharray = `${shipLen} 9999`;
+                const sepPt = DOM.trajBg.getPointAtLength(STAGING_SEP * totalPathLength); const sepPtNext = DOM.trajBg.getPointAtLength(STAGING_SEP * totalPathLength + 1); const sepAngle = Math.atan2(sepPtNext.y - sepPt.y, sepPtNext.x - sepPt.x) * (180 / Math.PI) + 90;
+                let bProgress = Math.min(1, (progress - STAGING_SEP) / (LANDING_DONE - STAGING_SEP)); let currX = sepPt.x + Math.sin(bProgress * Math.PI) * 200 + (PAD_X - sepPt.x) * bProgress; let currY = sepPt.y - Math.sin(bProgress * Math.PI) * 150 + (PAD_Y - sepPt.y) * bProgress;
+                let currAngle = bProgress < 0.25 ? sepAngle + (180 * (bProgress / 0.25)) : (bProgress < 0.85 ? 180 : 180 + (180 * ((bProgress - 0.85) / 0.15))); DOM.booster.setAttribute('transform', `translate(${currX}, ${currY}) rotate(${currAngle})`);
             }
 
             document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
             if (isRunning && sessionState === 'WORK') {
-                if (progress < STAGING_MECO) {
-                    DOM.svgBooster.querySelectorAll('.eng-nozzle').forEach(e=>e.classList.add('hud-burning'));
-                    DOM.booster.classList.add('active-burn'); DOM.ship.classList.remove('active-burn');
-                } else if (progress < STAGING_SEP) {
-                    DOM.svgBooster.querySelectorAll('.b-inner').forEach(e=>e.classList.add('hud-burning'));
-                    DOM.booster.classList.add('active-burn'); DOM.ship.classList.remove('active-burn'); 
-                } else if (progress >= STAGING_SEP && progress < 0.9) {
+                if (progress < STAGING_MECO) { DOM.svgBooster.querySelectorAll('.eng-nozzle').forEach(e=>e.classList.add('hud-burning')); DOM.booster.classList.add('active-burn'); DOM.ship.classList.remove('active-burn'); } 
+                else if (progress < STAGING_SEP) { DOM.svgBooster.querySelectorAll('.b-inner').forEach(e=>e.classList.add('hud-burning')); DOM.booster.classList.add('active-burn'); DOM.ship.classList.remove('active-burn'); } 
+                else if (progress >= STAGING_SEP && progress < 0.9) {
                     DOM.ship.classList.add('active-burn'); 
-                    
-                    if (progress < LANDING_DONE && ((progress > 0.27 && progress < 0.32) || (progress > 0.45 && progress < 0.50))) {
-                        DOM.booster.classList.add('active-burn');
-                        DOM.svgBooster.querySelectorAll('.b-inner').forEach(e=>e.classList.add('hud-burning'));
-                    } else {
-                        DOM.booster.classList.remove('active-burn');
-                    }
-
-                    if (progress < 0.7) {
-                        DOM.svgShip.querySelectorAll('.eng-nozzle').forEach(e=>e.classList.add('hud-burning'));
-                    } else {
-                        DOM.svgShip.querySelectorAll('.s-sl').forEach(e=>e.classList.add('hud-burning'));
-                    }
+                    if (progress < LANDING_DONE && ((progress > 0.27 && progress < 0.32) || (progress > 0.45 && progress < 0.50))) { DOM.booster.classList.add('active-burn'); DOM.svgBooster.querySelectorAll('.b-inner').forEach(e=>e.classList.add('hud-burning')); } 
+                    else { DOM.booster.classList.remove('active-burn'); }
+                    if (progress < 0.7) DOM.svgShip.querySelectorAll('.eng-nozzle').forEach(e=>e.classList.add('hud-burning')); else DOM.svgShip.querySelectorAll('.s-sl').forEach(e=>e.classList.add('hud-burning'));
                 }
-            } else {
-                DOM.booster.classList.remove('active-burn'); DOM.ship.classList.remove('active-burn');
-            }
+            } else { DOM.booster.classList.remove('active-burn'); DOM.ship.classList.remove('active-burn'); }
 
-            let pitch = 90 - (progress * 90); 
-            let alt = Math.pow(progress, 1.5) * (activePlanet === 'mars' ? 400 : (activePlanet === 'moon' ? 300 : 150)); 
-            let vel = Math.pow(progress, 2) * (activePlanet === 'mars' ? 40000 : 28000); 
-
-            DOM.pitch.textContent = pitch.toFixed(1);
-            DOM.alt.textContent = Math.floor(alt).toLocaleString();
-            DOM.vel.textContent = Math.floor(vel).toLocaleString();
-
-            let phaseText = "T-MINUS HOLDING";
-            if (sessionState === 'PRELAUNCH') phaseText = "TERMINAL COUNT";
+            let pitch = 90 - (progress * 90); let alt = Math.pow(progress, 1.5) * (activePlanet === 'mars' ? 400 : (activePlanet === 'moon' ? 300 : 150)); let vel = Math.pow(progress, 2) * (activePlanet === 'mars' ? 40000 : 28000); 
+            DOM.pitch.textContent = pitch.toFixed(1); DOM.alt.textContent = Math.floor(alt).toLocaleString(); DOM.vel.textContent = Math.floor(vel).toLocaleString();
+            let phaseText = sessionState === 'PRELAUNCH' ? "TERMINAL COUNT" : "T-MINUS HOLDING";
             if (sessionState === 'WORK') {
-                if(progress > 0) phaseText = "ASCENT";
-                if(progress > 0.1) phaseText = "MAX-Q";
-                if(progress > STAGING_MECO) phaseText = "STAGE SEP";
-                if(progress > STAGING_SEP) phaseText = "ORBITAL BURN";
-                if(progress > 0.9) phaseText = "ORBIT INSERTION";
-                DOM.progress.style.backgroundColor = "var(--accent-main)";
-                DOM.phase.style.color = "var(--accent-main)";
+                if(progress > 0) phaseText = "ASCENT"; if(progress > 0.1) phaseText = "MAX-Q"; if(progress > STAGING_MECO) phaseText = "STAGE SEP";
+                if(progress > STAGING_SEP) phaseText = "ORBITAL BURN"; if(progress > 0.9) phaseText = "ORBIT INSERTION";
+                DOM.progress.style.backgroundColor = "var(--accent-main)"; DOM.phase.style.color = "var(--accent-main)";
                 if(progress > 0.08 && progress < 0.18) DOM.ship.classList.add('reentry'); else DOM.ship.classList.remove('reentry');
             }
             DOM.phase.textContent = phaseText;
-
         } else if (sessionState === 'REST') {
-            DOM.progress.style.width = `${progress * 100}%`;
-            DOM.booster.setAttribute('transform', `translate(${PAD_X}, ${PAD_Y}) rotate(0)`);
-            DOM.booster.classList.remove('active-burn');
-            
-            const rLen = progress * returnPathLength;
-            const pt = DOM.returnPath.getPointAtLength(rLen);
-            const ptNext = DOM.returnPath.getPointAtLength(Math.min(rLen + 1, returnPathLength));
-            
-            let angle = Math.atan2(ptNext.y - pt.y, ptNext.x - pt.x) * (180 / Math.PI) - 90; 
-            
+            DOM.progress.style.width = `${progress * 100}%`; DOM.booster.setAttribute('transform', `translate(${PAD_X}, ${PAD_Y}) rotate(0)`); DOM.booster.classList.remove('active-burn');
+            const rLen = progress * returnPathLength; const pt = DOM.returnPath.getPointAtLength(rLen); const ptNext = DOM.returnPath.getPointAtLength(Math.min(rLen + 1, returnPathLength)); let angle = Math.atan2(ptNext.y - pt.y, ptNext.x - pt.x) * (180 / Math.PI) - 90; 
             document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
-            
-            if (progress > 0.75) {
-                let flipProg = (progress - 0.75) / 0.25;
-                angle = angle + (0 - angle) * flipProg; 
-                if(isRunning && progress < 0.99) { 
-                    DOM.ship.classList.add('active-burn'); 
-                    DOM.svgShip.querySelectorAll('.s-sl').forEach(e=>e.classList.add('hud-burning'));
-                } else { 
-                    DOM.ship.classList.remove('active-burn'); 
-                }
-            } else {
-                DOM.ship.classList.remove('active-burn'); 
-            }
-            DOM.booster.classList.remove('active-burn');
-            
-            if(progress >= 1) DOM.ship.setAttribute('transform', `translate(${PAD_X}, ${PAD_Y}) rotate(0) translate(0, -120)`);
-            else DOM.ship.setAttribute('transform', `translate(${pt.x}, ${pt.y}) rotate(${angle}) translate(0, -120)`);
-            
-            DOM.ship.classList.remove('reentry');
-            DOM.pitch.textContent = "0.0";
-            DOM.alt.textContent = Math.floor((1 - progress) * 150).toLocaleString();
-            DOM.vel.textContent = Math.floor((1 - Math.min(1, progress/0.75)) * 28000).toLocaleString();
-            
-            DOM.progress.style.backgroundColor = "var(--accent-green)";
-            DOM.phase.style.color = "var(--accent-green)";
-            DOM.phase.textContent = progress > 0.75 ? "LANDING BURN" : "COAST / RETURN";
+            if (progress > 0.75) { let flipProg = (progress - 0.75) / 0.25; angle = angle + (0 - angle) * flipProg; if(isRunning && progress < 0.99) { DOM.ship.classList.add('active-burn'); DOM.svgShip.querySelectorAll('.s-sl').forEach(e=>e.classList.add('hud-burning')); } else { DOM.ship.classList.remove('active-burn'); } } 
+            else { DOM.ship.classList.remove('active-burn'); } DOM.booster.classList.remove('active-burn');
+            if(progress >= 1) DOM.ship.setAttribute('transform', `translate(${PAD_X}, ${PAD_Y}) rotate(0) translate(0, -120)`); else DOM.ship.setAttribute('transform', `translate(${pt.x}, ${pt.y}) rotate(${angle}) translate(0, -120)`);
+            DOM.ship.classList.remove('reentry'); DOM.pitch.textContent = "0.0"; DOM.alt.textContent = Math.floor((1 - progress) * 150).toLocaleString(); DOM.vel.textContent = Math.floor((1 - Math.min(1, progress/0.75)) * 28000).toLocaleString();
+            DOM.progress.style.backgroundColor = "var(--accent-green)"; DOM.phase.style.color = "var(--accent-green)"; DOM.phase.textContent = progress > 0.75 ? "LANDING BURN" : "COAST / RETURN";
         }
-
         if (isRunning && sessionState === 'WORK') {
             if (progress >= STAGING_MECO && !eventsLogged.meco) { logEvent("MECO. Boostback burn start."); eventsLogged.meco = true; }
             if (progress >= STAGING_SEP && !eventsLogged.sep) { logEvent("Hot staging complete. Starship to orbit.", "success"); eventsLogged.sep = true; }
@@ -1287,298 +1045,155 @@
     }
 
     function renderLoop(now) {
-        if(!lastFrameTime) lastFrameTime = now;
-        
-        renderOrbits(now);
-
+        if(!lastFrameTime) lastFrameTime = now; renderOrbits(now);
         if (isRunning) {
-            let dt = ((now - lastFrameTime) / 1000) * speedMult;
-            let duration = sessionState === 'WORK' ? getWorkTime() : getRestTime();
-            
-            exactProgress += dt / duration;
-            
-            if (exactProgress >= 1) {
-                exactProgress = 1;
-                transitionState();
-            }
-
-            let secLeft = Math.ceil(duration * (1 - exactProgress));
-            updateTimeDisplay(secLeft);
-            updateVisuals(exactProgress);
+            let dt = ((now - lastFrameTime) / 1000) * speedMult; let duration = sessionState === 'WORK' ? getWorkTime() : getRestTime(); exactProgress += dt / duration;
+            if (exactProgress >= 1) { exactProgress = 1; transitionState(); } updateTimeDisplay(Math.ceil(duration * (1 - exactProgress))); updateVisuals(exactProgress);
         }
-        lastFrameTime = now;
-        requestAnimationFrame(renderLoop);
+        lastFrameTime = now; requestAnimationFrame(renderLoop);
     }
 
     function transitionState() {
         if (sessionState === 'WORK') {
-            sessionState = 'REST';
-            exactProgress = 0;
-            completedMissions++;
-            
-            let baseDoge = Math.floor(getWorkTime() / 60);
-            let multiplier = activePlanet === 'mars' ? 10 : (activePlanet === 'moon' ? 5 : 1);
-            let earnedCoins = Math.max(1, baseDoge * multiplier); 
-            
-            dogeCurrency += earnedCoins; 
-            syncMetaUI();
-            saveMokusData();
-
-            logEvent(`SECO. Payload deployed. Earned ${earnedCoins} Ð.`, "success");
-            playSound('orbit');
+            sessionState = 'REST'; exactProgress = 0; completedMissions++;
+            let baseDoge = Math.floor(getWorkTime() / 60); let multiplier = activePlanet === 'mars' ? 10 : (activePlanet === 'moon' ? 5 : 1); let earnedCoins = Math.max(1, baseDoge * multiplier); 
+            dogeCurrency += earnedCoins; syncMetaUI(); saveMokusData(); logEvent(`SECO. Payload deployed. Earned ${earnedCoins} Ð.`, "success"); playSound('orbit');
         } else if (sessionState === 'REST') {
-            sessionState = 'IDLE';
-            exactProgress = 0;
-            DOM.lowerHud.classList.remove('active');
-            DOM.bigLaunchWrapper.classList.remove('hidden');
-            updateTimeDisplay(getWorkTime());
-            updateVisuals(0); 
-            logEvent("Ship stacked. Ready for next manifest.", "success");
-            DOM.phase.textContent = "T-MINUS HOLDING";
-            DOM.phase.style.color = "var(--accent-main)";
-            isRunning = false;
+            sessionState = 'IDLE'; exactProgress = 0; DOM.lowerHud.classList.remove('active'); DOM.bigLaunchWrapper.classList.remove('hidden'); updateTimeDisplay(getWorkTime()); updateVisuals(0); 
+            logEvent("Ship stacked. Ready for next manifest.", "success"); DOM.phase.textContent = "T-MINUS HOLDING"; DOM.phase.style.color = "var(--accent-main)"; isRunning = false;
         }
     }
 
     function executeCountdown(t) {
         if (sessionState !== 'PRELAUNCH') return; 
-        if (t > 0) {
-            DOM.time.textContent = `T- 00:0${t}`;
-            logEvent(`T-Minus ${t}...`);
-            playTone(1000, 'sine', 0.2);
-            countdownTimer = setTimeout(() => executeCountdown(t - 1), 1000);
-        } else {
-            playTone(800, 'square', 0.8);
-            sessionState = 'WORK';
-            exactProgress = 0;
-            eventsLogged = { meco: false, sep: false, land: false, exp: false };
-            playSound('launch');
-            
-            DOM.visualizerBg.classList.remove('launching');
-            void DOM.visualizerBg.offsetWidth;
-            DOM.visualizerBg.classList.add('launching');
-
-            isRunning = true;
-            lastFrameTime = performance.now();
-            logEvent("LIFTOFF.", "success");
-        }
+        if (t > 0) { DOM.time.textContent = `T- 00:0${t}`; logEvent(`T-Minus ${t}...`); playTone(1000, 'sine', 0.2); countdownTimer = setTimeout(() => executeCountdown(t - 1), 1000); } 
+        else { playTone(800, 'square', 0.8); sessionState = 'WORK'; exactProgress = 0; eventsLogged = { meco: false, sep: false, land: false, exp: false }; playSound('launch'); DOM.visualizerBg.classList.remove('launching'); void DOM.visualizerBg.offsetWidth; DOM.visualizerBg.classList.add('launching'); isRunning = true; lastFrameTime = performance.now(); logEvent("LIFTOFF.", "success"); }
     }
 
     function triggerPreLaunch() {
         if (eventsLogged.exp || isRunning || sessionState !== 'IDLE') return; 
-        
-        sessionState = 'PRELAUNCH';
-        DOM.bigLaunchWrapper.classList.add('hidden');
-        DOM.lowerHud.classList.add('active');
-        
-        logEvent("Jonáš: Flight Dynamics GO.", "quote");
-        setTimeout(() => {
-            if(sessionState !== 'PRELAUNCH') return;
-            logEvent("Deniz: Avionics GO.", "quote");
-            setTimeout(() => executeCountdown(5), 500);
-        }, 800);
+        sessionState = 'PRELAUNCH'; DOM.bigLaunchWrapper.classList.add('hidden'); DOM.lowerHud.classList.add('active'); logEvent("Jonáš: Flight Dynamics GO.", "quote");
+        setTimeout(() => { if(sessionState !== 'PRELAUNCH') return; logEvent("Deniz: Avionics GO.", "quote"); setTimeout(() => executeCountdown(5), 500); }, 800);
     }
 
     function resetTimer() {
-        if (sessionState === 'PRELAUNCH') {
-            logEvent("HOLD HOLD HOLD. Scrub commanded.", "error");
-            clearTimeout(countdownTimer);
-            sessionState = 'IDLE';
-            DOM.bigLaunchWrapper.classList.remove('hidden');
-            DOM.phase.textContent = "T-MINUS HOLDING";
-            DOM.lowerHud.classList.remove('active');
-            updateTimeDisplay(getWorkTime());
-            return;
-        }
-
+        if (sessionState === 'PRELAUNCH') { logEvent("HOLD HOLD HOLD. Scrub commanded.", "error"); clearTimeout(countdownTimer); sessionState = 'IDLE'; DOM.bigLaunchWrapper.classList.remove('hidden'); DOM.phase.textContent = "T-MINUS HOLDING"; DOM.lowerHud.classList.remove('active'); updateTimeDisplay(getWorkTime()); return; }
         if (sessionState === 'WORK' && exactProgress > 0) {
-            logEvent("FTS TERMINATION. Vehicle lost. Accounts drained.", "error");
-            dogeCurrency = 0;
-            syncMetaUI();
-            saveMokusData();
-            
-            eventsLogged.exp = true;
-            document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
-            DOM.ship.classList.add('exploded');
-            DOM.booster.classList.add('exploded');
-            playSound('exp');
-            
-            setTimeout(() => {
-                DOM.ship.classList.remove('exploded');
-                DOM.booster.classList.remove('exploded');
-                eventsLogged.exp = false;
-                fullReset();
-            }, 3000);
-        } else {
-            fullReset();
-        }
+            logEvent("FTS TERMINATION. Vehicle lost. Accounts drained.", "error"); dogeCurrency = 0; syncMetaUI(); saveMokusData(); eventsLogged.exp = true; document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning')); DOM.ship.classList.add('exploded'); DOM.booster.classList.add('exploded'); playSound('exp');
+            setTimeout(() => { DOM.ship.classList.remove('exploded'); DOM.booster.classList.remove('exploded'); eventsLogged.exp = false; fullReset(); }, 3000);
+        } else { fullReset(); }
     }
 
-    function fullReset() {
-        isRunning = false;
-        sessionState = 'IDLE';
-        exactProgress = 0;
-        DOM.bigLaunchWrapper.classList.remove('hidden');
-        DOM.lowerHud.classList.remove('active');
-        document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning'));
-        updateTimeDisplay(getWorkTime());
-        logEvent("Pad reset. Systems nominal.");
-        eventsLogged = { meco: false, sep: false, land: false, exp: false };
-        DOM.visualizerBg.classList.remove('launching');
-        updateVisuals(0);
-    }
+    function fullReset() { isRunning = false; sessionState = 'IDLE'; exactProgress = 0; DOM.bigLaunchWrapper.classList.remove('hidden'); DOM.lowerHud.classList.remove('active'); document.querySelectorAll('.eng-nozzle').forEach(el => el.classList.remove('hud-burning')); updateTimeDisplay(getWorkTime()); logEvent("Pad reset. Systems nominal."); eventsLogged = { meco: false, sep: false, land: false, exp: false }; DOM.visualizerBg.classList.remove('launching'); updateVisuals(0); }
 
-    DOM.bigLaunchBtn.addEventListener('click', triggerPreLaunch);
-    DOM.reset.addEventListener('click', resetTimer);
-    DOM.dfReset.addEventListener('click', resetTimer);
-
-    DOM.btnStore.addEventListener('click', () => { DOM.storeModal.classList.add('active'); });
-    DOM.btnCloseStore.addEventListener('click', () => { DOM.storeModal.classList.remove('active'); });
+    DOM.bigLaunchBtn.addEventListener('click', triggerPreLaunch); DOM.reset.addEventListener('click', resetTimer); DOM.dfReset.addEventListener('click', resetTimer);
+    DOM.btnStore.addEventListener('click', () => { DOM.storeModal.classList.add('active'); }); DOM.btnCloseStore.addEventListener('click', () => { DOM.storeModal.classList.remove('active'); });
     
-    window.buyItem = function(itemKey) {
-        let item = upgrades[itemKey];
+    window.toggleOrBuyItem = function(itemKey) {
+        let item = upgrades[itemKey]; if (!item) return;
         if (!item.owned) {
-            if (dogeCurrency >= item.cost) {
-                dogeCurrency -= item.cost;
-                item.owned = true;
-                item.active = true;
-                logEvent(`Acquired: ${itemKey.toUpperCase()}`, "loot");
-            } else {
-                alert("Insufficient DOGE balance.");
-                return;
-            }
-        } else {
-            item.active = !item.active;
-        }
-
+            if (item.type === 'direct') { if (dogeCurrency >= item.cost) { dogeCurrency -= item.cost; item.owned = true; item.active = true; logEvent(`Acquired: ${itemKey.toUpperCase()}`, "loot"); } else { alert("Insufficient DOGE balance."); return; } } else { return; }
+        } else { item.active = !item.active; }
         if (itemKey === 'moon' && item.active) { activePlanet = 'moon'; upgrades.mars.active = false; }
         if (itemKey === 'mars' && item.active) { activePlanet = 'mars'; upgrades.moon.active = false; }
         if ((itemKey === 'moon' || itemKey === 'mars') && !item.active) { activePlanet = 'earth'; }
-
-        Object.keys(upgrades).forEach(key => {
-            if (upgrades[key].owned) {
-                const btn = document.getElementById('btn-' + key);
-                if(btn) {
-                    btn.textContent = upgrades[key].active ? "TOGGLE OFF" : "TOGGLE ON";
-                    btn.style.color = upgrades[key].active ? "#fff" : "#888";
-                    btn.style.borderColor = upgrades[key].active ? "#fff" : "#444";
-                }
-            }
-        });
-
-        syncMetaUI();
-        saveMokusData();
+        syncMetaUI(); saveMokusData();
     }
 
-    window.triggerCasino = function(cost) {
-        if (dogeCurrency < cost) {
-            alert("Insufficient DOGE balance.");
-            return;
-        }
-        dogeCurrency -= cost;
-        syncMetaUI();
+    window.pullGacha = function(times, cost) {
+        if (isGachaPulling) return; if (dogeCurrency < cost) { alert("Insufficient DOGE balance."); return; }
+        dogeCurrency -= cost; syncMetaUI(); gachaQueue = [];
         
-        DOM.storeModal.classList.remove('active');
-        DOM.quoteModal.classList.add('active');
-        DOM.quoteText.textContent = "ESTABLISHING SECURE LINK...";
-        DOM.lootRewards.innerHTML = "";
+        let isDegen = cost === 10000;
+        for(let i=0; i<times; i++) {
+            if(isDegen) gachaQueue.push(generateDegenResult());
+            else gachaQueue.push(generateGachaResult());
+        }
         
-        let rolls = 0;
-        let maxRolls = 20;
-        playSound('launch');
-
-        let rollInt = setInterval(() => {
-            rolls++;
-            DOM.slotDisplay.textContent = `[ ${Math.floor(Math.random()*10)} ${Math.floor(Math.random()*10)} ${Math.floor(Math.random()*10)} ]`;
-            if (rolls >= maxRolls) {
-                clearInterval(rollInt);
-                finalizeLootbox(cost);
-            }
-        }, 50);
+        DOM.gachaOverlay.classList.add('active'); processNextGacha();
     }
 
-    function finalizeLootbox(cost) {
-        let rand = Math.random();
-        let payout = 0;
-        let finalDisplay = "";
-
-        if (rand < 0.65) {
-            payout = Math.floor(Math.random() * (cost * 0.3));
-            finalDisplay = `[ 0 0 0 ]`;
-        } else if (rand < 0.90) {
-            payout = Math.floor(cost * (0.8 + Math.random() * 0.7));
-            finalDisplay = `[ 7 7 2 ]`;
-        } else if (rand < 0.98) {
-            payout = Math.floor(cost * (2 + Math.random() * 2));
-            finalDisplay = `[ 7 7 7 ]`;
-        } else {
-            payout = cost * 10;
-            finalDisplay = `[ 💎 💎 💎 ]`;
+    function generateDegenResult() {
+        const r = Math.random();
+        // 0.5% Omega Tier (Contraband)
+        if (r < 0.005) {
+            if (upgrades.contraband.owned) return { tier: 'MYTHIC', color: 'var(--tier-mythic)', title: 'DUPLICATE: CONTRABAND', desc: 'Liquidated for massive payout.', val: 50000, unlock: null };
+            return { tier: 'OMEGA', color: 'var(--tier-omega)', title: 'REDACTED FILE ACQUIRED', desc: 'System anomaly. Unauthorized toggle added to inventory.', val: 0, unlock: 'contraband' };
         }
-
-        dogeCurrency += payout;
-        syncMetaUI();
-        saveMokusData();
-        DOM.slotDisplay.textContent = finalDisplay;
-
-        if (payout >= cost * 2) {
-            playSound('loot');
-            document.body.classList.add('shake-active');
-            setTimeout(() => document.body.classList.remove('shake-active'), 500);
-            DOM.lootRewards.innerHTML = `<span style="color: var(--accent-gold);">MEGA HIT! + ${payout} Ð</span>`;
-        } else if (payout > 0) {
-            playSound('loot');
-            DOM.lootRewards.innerHTML = `<span style="color: var(--accent-green);">+ ${payout} Ð STAKED!</span>`;
-        } else {
-            playSound('exp');
-            DOM.lootRewards.innerHTML = `<span style="color: var(--accent-red);">RUG PULLED. NO DATA RECOVERED.</span>`;
-        }
-
-        DOM.quoteText.textContent = `"${elonQuotes[Math.floor(Math.random() * elonQuotes.length)]}"`;
-        logEvent(`Gambled ${cost} Ð. Retrieved ${payout} Ð.`, payout > cost ? "loot" : "error");
+        // 1.5% Mythic Payout
+        if (r < 0.02) return { tier: 'MYTHIC', color: 'var(--tier-mythic)', title: 'DEGEN HIT', desc: 'Against all odds.', val: 150000, unlock: null };
+        // 8% Epic Payout
+        if (r < 0.10) return { tier: 'EPIC', color: 'var(--tier-epic)', title: 'HIGH YIELD RETURN', desc: 'Gambling pays off.', val: 30000, unlock: null };
+        // 40% Break Even / Minor Loss
+        if (r < 0.50) return { tier: 'RARE', color: 'var(--tier-rare)', title: 'PARTIAL RECOVERY', desc: 'At least it is not zero.', val: Math.floor(Math.random() * 5000) + 1000, unlock: null };
+        // 50% Total Loss
+        return { tier: 'TRASH', color: 'var(--tier-trash)', title: 'TOTAL LOSS', desc: 'The house always wins.', val: 0, unlock: null };
     }
 
-    DOM.btnCloseQuote.addEventListener('click', () => DOM.quoteModal.classList.remove('active'));
+    function generateGachaResult() {
+        const r = Math.random();
+        if (r < 0.002) {
+            if (upgrades.flame.owned) return { tier: 'LEGENDARY', color: 'var(--tier-legendary)', title: 'DUPLICATE: FLAME', desc: 'Converted to DOGE.', val: 25000, unlock: null };
+            return { tier: 'MYTHIC', color: 'var(--tier-mythic)', title: 'BORING FLAMETHROWER', desc: 'Non-zero probability event achieved.', val: 0, unlock: 'flame' };
+        }
+        if (r < 0.012) {
+            if (upgrades.hyper_plume.owned) return { tier: 'EPIC', color: 'var(--tier-epic)', title: 'DUPLICATE: PLUME', desc: 'Converted to DOGE.', val: 5000, unlock: null };
+            return { tier: 'LEGENDARY', color: 'var(--tier-legendary)', title: 'HYPER PLUME INJECTION', desc: 'Cosmetic physics alteration achieved.', val: 0, unlock: 'hyper_plume' };
+        }
+        if (r < 0.60) return { tier: 'COMMON', color: 'var(--tier-common)', title: 'DATA FRAGMENT', desc: 'Standard orbital noise.', val: Math.floor(Math.random() * 50) + 10, unlock: null };
+        if (r < 0.90) return { tier: 'RARE', color: 'var(--tier-rare)', title: 'TELEMETRY PACK', desc: 'High-density insights.', val: Math.floor(Math.random() * 200) + 50, unlock: null };
+        return { tier: 'EPIC', color: 'var(--tier-epic)', title: 'FSD ALGORITHM', desc: 'Neural net weights retrieved.', val: Math.floor(Math.random() * 800) + 200, unlock: null };
+    }
+
+    window.processNextGacha = function() {
+        if (gachaQueue.length === 0) { DOM.gachaOverlay.classList.remove('active'); isGachaPulling = false; saveMokusData(); return; }
+
+        isGachaPulling = true; const result = gachaQueue.shift();
+        
+        DOM.gachaResult.classList.remove('revealed'); DOM.gachaPod.style.display = 'block'; DOM.gachaPod.style.borderColor = '#555'; DOM.gachaPod.style.boxShadow = 'none'; DOM.gachaPod.classList.add('shaking');
+        DOM.particleContainer.innerHTML = ''; DOM.gachaOverlay.classList.remove('strobe-active');
+        
+        playEpicWindup(result.tier);
+
+        setTimeout(() => {
+            DOM.gachaPod.classList.remove('shaking'); DOM.gachaPod.style.display = 'none';
+            DOM.gachaResult.style.borderColor = result.color; DOM.gachaResult.style.boxShadow = `0 0 80px ${result.color}40`;
+            DOM.resTier.textContent = result.tier; DOM.resTier.style.color = result.color; DOM.resTitle.textContent = result.title;
+            
+            if (result.unlock) { DOM.resDesc.textContent = result.desc; DOM.resValue.textContent = "COSMETIC ACQUIRED"; } 
+            else { DOM.resDesc.textContent = result.tier === 'TRASH' ? '"Better luck next time."' : `"${elonQuotes[Math.floor(Math.random() * elonQuotes.length)]}"`; DOM.resValue.textContent = `+ ${result.val} Ð`; }
+            DOM.resValue.style.color = result.color;
+            
+            DOM.gachaResult.classList.add('revealed'); spawnParticles(result.color);
+            
+            if(result.tier === 'LEGENDARY' || result.tier === 'MYTHIC' || result.tier === 'EPIC' || result.tier === 'OMEGA') {
+                playEpicImpact(result.tier); document.body.classList.add('shake-active'); setTimeout(() => document.body.classList.remove('shake-active'), 500);
+                if (result.tier === 'MYTHIC' || result.tier === 'OMEGA') DOM.gachaOverlay.classList.add('strobe-active');
+            } else if (result.tier === 'TRASH') { playSound('exp'); } 
+            else { playSound('orbit'); }
+
+            if (result.unlock) { upgrades[result.unlock].owned = true; upgrades[result.unlock].active = true; logEvent(`Gacha Unlock: ${result.title}`, 'loot'); } 
+            else { dogeCurrency += result.val; logEvent(`Gacha Pull [${result.tier}]: ${result.val} Ð`, result.tier === 'COMMON' || result.tier === 'TRASH' ? 'normal' : 'loot'); }
+            syncMetaUI();
+        }, 1600);
+    }
 
     DOM.mechazilla.addEventListener('click', () => {
         const p = prompt("ENTER SYSADMIN AUTHORIZATION:");
-        if (p && btoa(p) === "SkQgTW9rdXM=") {
-            DOM.tSpeed.value = speedMult;
-            DOM.tMissions.value = completedMissions;
-            DOM.tCurrency.value = dogeCurrency;
-            DOM.testModal.classList.add('active');
-        } else if(p !== null) {
-            logEvent("UNAUTHORIZED ACCESS ATTEMPT DETECTED.", "error");
-            document.body.classList.add('shake-active');
-            setTimeout(() => document.body.classList.remove('shake-active'), 500);
-        }
+        if (p && btoa(p) === "SkQgTW9rdXM=") { DOM.tSpeed.value = speedMult; DOM.tMissions.value = completedMissions; DOM.tCurrency.value = dogeCurrency; DOM.testModal.classList.add('active'); } 
+        else if(p !== null) { logEvent("UNAUTHORIZED ACCESS ATTEMPT DETECTED.", "error"); document.body.classList.add('shake-active'); setTimeout(() => document.body.classList.remove('shake-active'), 500); }
     });
 
     DOM.btnApplyTest.addEventListener('click', () => {
-        speedMult = parseFloat(DOM.tSpeed.value) || 1;
-        completedMissions = parseInt(DOM.tMissions.value) || 0;
-        dogeCurrency = parseInt(DOM.tCurrency.value) || 0;
-        syncMetaUI();
-        saveMokusData();
-        DOM.testModal.classList.remove('active');
-        logEvent(`SysAdmin Override: SPDx${speedMult}, MISx${completedMissions}, Ðx${dogeCurrency}`);
+        speedMult = parseFloat(DOM.tSpeed.value) || 1; completedMissions = parseInt(DOM.tMissions.value) || 0; dogeCurrency = parseInt(DOM.tCurrency.value) || 0;
+        syncMetaUI(); saveMokusData(); DOM.testModal.classList.remove('active'); logEvent(`SysAdmin Override: SPDx${speedMult}, MISx${completedMissions}, Ðx${dogeCurrency}`);
     });
 
     DOM.btnResetTest.addEventListener('click', () => {
         if(confirm("CRITICAL WARNING: Are you sure you want to completely wipe all flight data and DOGE balance?")) {
-            completedMissions = 0;
-            dogeCurrency = 0;
-            Object.keys(upgrades).forEach(k => { upgrades[k].owned = false; upgrades[k].active = false; });
-            activePlanet = 'earth';
-            DOM.todoList.innerHTML = '';
-            DOM.tSpeed.value = 1;
-            DOM.tMissions.value = 0;
-            DOM.tCurrency.value = 0;
-            speedMult = 1;
-            saveMokusData();
-            syncMetaUI();
-            DOM.testModal.classList.remove('active');
-            logEvent("System wiped. All telemetry erased.", "error");
+            completedMissions = 0; dogeCurrency = 0; Object.keys(upgrades).forEach(k => { upgrades[k].owned = false; upgrades[k].active = false; });
+            activePlanet = 'earth'; DOM.todoList.innerHTML = ''; DOM.tSpeed.value = 1; DOM.tMissions.value = 0; DOM.tCurrency.value = 0; speedMult = 1;
+            saveMokusData(); syncMetaUI(); DOM.testModal.classList.remove('active'); logEvent("System wiped. All telemetry erased.", "error");
         }
     });
 
