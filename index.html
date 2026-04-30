@@ -136,27 +136,31 @@
     .big-launch-wrapper {
         position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%); z-index: 50;
         transition: opacity 0.3s, transform 0.3s; pointer-events: auto;
+        filter: drop-shadow(0 15px 30px rgba(0,0,0,0.8));
     }
     .big-launch-wrapper.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(20px); }
     
     .big-launch-btn {
-        background: rgba(5, 5, 5, 0.85);
+        background: rgba(10, 10, 10, 0.3);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
         color: var(--accent-main); font-family: 'JetBrains Mono'; font-size: 2.2rem; font-weight: 900;
-        padding: 20px 90px; cursor: pointer;
-        text-transform: uppercase; letter-spacing: 0.15em; backdrop-filter: blur(10px);
+        padding: 20px 90px; cursor: pointer; border: none; position: relative;
+        text-transform: uppercase; letter-spacing: 0.15em; 
         clip-path: polygon(25px 0, 100% 0, calc(100% - 25px) 100%, 0 100%);
-        border: none;
-        box-shadow: inset 0 0 0 2px var(--accent-main); /* Fallback outline */
-        transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+        transition: all 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
     }
     .big-launch-btn::before {
-        content: ''; position: absolute; inset: 2px;
-        background: #000; z-index: -1;
-        clip-path: polygon(23px 0, 100% 0, calc(100% - 23px) 100%, 0 100%);
-        transition: background 0.2s;
+        content: ''; position: absolute; inset: 0; z-index: -2;
+        background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 40%, rgba(255,255,255,0.1) 100%);
     }
-    .big-launch-btn:hover { color: #000; transform: scale(1.02); }
-    .big-launch-btn:hover::before { background: var(--accent-main); }
+    .big-launch-btn::after {
+        content: ''; position: absolute; inset: 1px; z-index: -1;
+        background: rgba(5, 5, 5, 0.7); 
+        clip-path: polygon(24px 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
+        transition: background 0.3s ease;
+    }
+    .big-launch-btn:hover { transform: scale(1.02); }
+    .big-launch-btn:hover::after { background: rgba(30, 30, 30, 0.6); }
 
     /* Top HUD Elements */
     .top-hud {
@@ -335,9 +339,22 @@
 
     .locked-item { display: none; }
 
+    .config-label {
+        font-family: 'JetBrains Mono';
+        font-size: 0.5rem; /* Reduced from default to ~half size */
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
     /* Distraction Free Mode (Zen Mode) */
     body.df-mode .flight-visualizer { background: #000; }
-    body.df-mode .stars, body.df-mode .planet-glow { opacity: 0.1; }
+    body.df-mode .app-container::before { display: none !important; }
+    body.df-mode .stars, 
+    body.df-mode .planet-glow,
+    body.df-mode .master-svg { display: none !important; }
+    
     body.df-mode .top-hud .todo-panel,
     body.df-mode .top-hud .destination-badge,
     body.df-mode .top-hud .wallet-badge,
@@ -362,16 +379,6 @@
     body.df-mode .time { font-size: 8rem; text-shadow: 0 0 40px rgba(255,255,255,0.2); }
     body.df-mode .big-launch-wrapper { bottom: 15%; pointer-events: auto; }
     body.df-mode .df-scrub { display: block; width: 250px; margin-top: 25px; }
-
-    @media (max-width: 768px) {
-        .btn-df-toggle { display: none !important; }
-        body.df-mode .time { font-size: 5rem; }
-        .start-menu h1 { font-size: 2rem; }
-        .big-launch-btn { font-size: 1.5rem; padding: 15px 50px; }
-        .test-form { grid-template-columns: 1fr; }
-        .modal-content { width: 95%; padding: 20px; }
-        .todo-panel { width: 100%; border-left: none; border-top: 4px solid var(--accent-main); }
-    }
 
 </style>
 </head>
@@ -906,26 +913,7 @@
         }
     }
 
-    function checkMobileEnv() {
-        const isMobile = window.innerWidth <= 768 || window.outerWidth <= 768 || 
-                         window.matchMedia("(max-width: 768px)").matches || 
-                         (/iPhone|iPad|iPod|Android|Mobi|Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document);
-        
-        if (isMobile) {
-            if (!document.body.classList.contains('df-mode')) {
-                document.body.classList.add('df-mode');
-                isDfMode = true;
-                if(DOM.btnDfToggle) DOM.btnDfToggle.textContent = "NORMAL MODE";
-                saveMokusData();
-            }
-        } else if (!isDfMode) {
-            document.body.classList.remove('df-mode');
-        }
-    }
-
-    window.addEventListener('resize', checkMobileEnv);
     loadMokusData();
-    checkMobileEnv();
 
     if (DOM.btnDfToggle) {
         DOM.btnDfToggle.addEventListener('click', () => {
